@@ -1,20 +1,22 @@
 package heat
 
-type ASGPropaty struct {
-	Flavor string
-	Image  string
+type ASGProperty struct {
+	Flavor string `yaml:"flavor"`
+	Image  string `yaml:"image"`
 }
 
 type AutoScalingGroup struct {
-	MinSize int
-	MaxSize int
-	Propaty ASGPropaty
+	Name       string      `yaml:"name"`
+	MinSize    int         `yaml:"min-size"`
+	MaxSize    int         `yaml:"max-size"`
+	Properties ASGProperty `yaml:"properties"`
 }
 
 type ScalingPolicy struct {
-	AutoScalingGroup
-	Cooldown          int
-	ScalingAdjustment int
+	Name                 string `yaml:"name"`
+	AutoScalingGroupName string `yaml:"auto-scaling-group-name"`
+	Cooldown             int    `yaml:"cooldown"`
+	ScalingAdjustment    int    `yaml:"scaling-adjustment"`
 }
 
 type EnumComparisonOperator int
@@ -28,17 +30,16 @@ const (
 	Ne                                   // !=
 )
 
-const ()
-
 type Alarm struct {
-	MeterName string // string?
-	// Statistic string
-	Threshold          float32
-	ComparisonOperator EnumComparisonOperator
+	Name               string  `yaml:"name"`
+	MeterName          string  `yaml:"meter-name"` // string?
+	Threshold          float32 `yaml:"threshold"`
+	AlarmActions       string  `yaml:"alarm-actions"`
+	ComparisonOperator string  `yaml:"comparison-operator"`
 }
 
 type Template struct {
-	AutoScalingGroups []AutoScalingGroup
-	ScalingPoliceis   []ScalingPolicy
-	Alarms            []Alarm
+	AutoScalingGroups []AutoScalingGroup `yaml:"auto-scaling-groups"`
+	ScalingPolicies   []ScalingPolicy    `yaml:"scaling-policies"`
+	Alarms            []Alarm            `yaml:"alarms"`
 }
