@@ -30,7 +30,7 @@ func GetStacks(c domain.Context) error {
 		return c.String(http.StatusOK, err.Error())
 	}
 
-	// valitation yaml
+	//TODO valitation
 
 	return nil
 }
