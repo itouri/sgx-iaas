@@ -1,6 +1,15 @@
 package messaging
 
 type Server struct {
+	Transport
+	started bool
+}
+
+func NewServer(tp Transport) {
+	return &Server{
+		Transport: tp,
+		started:   false,
+	}
 }
 
 func (s *Server) Start() {

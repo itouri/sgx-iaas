@@ -9,7 +9,9 @@ type Transport struct {
 	// Conf driver.conf
 }
 
-func NewTansport(driver driver.Driver) *Transport {
+// conf
+func NewTansport() *Transport {
+
 	return &Transport{
 		Driver: driver,
 	}
