@@ -10,7 +10,13 @@ type Transport struct {
 }
 
 // conf
-func NewTansport() *Transport {
+func NewTansport(driverStr string, url string) *Transport {
+	// TODO dirty
+	var driver driver.Driver
+	switch driverStr {
+	case "rabbit":
+
+	}
 
 	return &Transport{
 		Driver: driver,

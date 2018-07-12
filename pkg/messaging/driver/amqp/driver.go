@@ -1,29 +1,30 @@
 package amqp
 
-type Driver struct {
+type AMQPDriver struct {
+	Url string
 }
 
-func NewDriver() *Driver {
-	return &Driver{}
+func NewAMQPDriver() *AMQPDriver {
+	return &AMQPDriver{}
 }
 
-func (d *Driver) Send() {
-
-}
-
-func (d *Driver) SendNotification() {
+func (d *AMQPDriver) Send() {
 
 }
 
-func (d *Driver) Listen() {
+func (d *AMQPDriver) SendNotification() {
 
 }
 
-func (d *Driver) ListenNotification() {
+func (d *AMQPDriver) Listen() {
 
 }
 
-func (d *Driver) CleanUp() {
+func (d *AMQPDriver) ListenNotification() {
+
+}
+
+func (d *AMQPDriver) CleanUp() {
 
 }
 

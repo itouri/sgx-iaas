@@ -5,5 +5,12 @@ import (
 )
 
 type RabbitDriver struct {
-	AMQPDriver amqp.Driver
+	AMQPDriver *amqp.AMQPDriver
+}
+
+func NewRabbitDriver() *RabbitDriver {
+	amqpDriver := amqp.NewAMQPDriver()
+	return &RabbitDriver{
+		AMQPDriver: amqpDriver,
+	}
 }
