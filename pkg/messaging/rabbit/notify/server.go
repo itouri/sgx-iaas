@@ -12,36 +12,34 @@ type RabbitNotifyServer struct {
 	channel   *amqp.Channel
 }
 
-func NewRabbitNotifyServer(url string, queueName string) (*RabbitNotifyServer, error) {
-	return nil, &RabbitNotifyServer{
+func NewRabbitNotifyServer(url string, queueName string) *RabbitNotifyServer {
+	return &RabbitNotifyServer{
 		Url:       url,
 		QueueName: queueName,
-		channel:   ch,
 	}
 }
 
-func (*r RabbitNotifyServer) Start() error 
-{
-	conn, err := amqp.Dial(url)
+func (r *RabbitNotifyServer) Start() error {
+	conn, err := amqp.Dial(r.Url)
 	if err != nil {
 		defer conn.Close()
 		return err
 	}
 
-	r.ch, err := conn.Channel()
+	r.channel, err = conn.Channel()
 	if err != nil {
-		defer ch.Close()
+		defer r.channel.Close()
 		return err
 	}
 
-	err = r.ch.ExchangeDeclare(
-		r.QueueName,   // name
-		"topic", // type
-		true,     // durable
-		false,    // auto-deleted
-		false,    // internal
-		false,    // no-wait
-		nil,      // arguments
+	err = r.channel.ExchangeDeclare(
+		r.QueueName, // name
+		"topic",     // type
+		true,        // durable
+		false,       // auto-deleted
+		false,       // internal
+		false,       // no-wait
+		nil,         // arguments
 	)
 	if err != nil {
 		return err
@@ -49,9 +47,8 @@ func (*r RabbitNotifyServer) Start() error
 	return nil
 }
 
-func (*r RabbitNotifyServer) Listen(lf ListenFunc) error 
-{
-	q, err := r.ch.QueueDeclare(
+func (r *RabbitNotifyServer) Listen(lf ListenFunc) error {
+	q, err := r.channel.QueueDeclare(
 		"",    // name
 		false, // durable
 		false, // delete when usused
@@ -63,18 +60,18 @@ func (*r RabbitNotifyServer) Listen(lf ListenFunc) error
 		return err
 	}
 
-	err = r.ch.QueueBind(
-		q.Name, // queue name
-		"",     // routing key
+	err = r.channel.QueueBind(
+		q.Name,      // queue name
+		"",          // routing key
 		r.QueueName, // exchange
 		false,
-		nil
+		nil,
 	)
 	if err != nil {
 		return err
 	}
 
-	msgs, err := ch.Consume(
+	msgs, err := r.channel.Consume(
 		q.Name, // queue
 		"",     // consumer
 		true,   // auto-ack
@@ -86,7 +83,9 @@ func (*r RabbitNotifyServer) Listen(lf ListenFunc) error
 
 	go func() {
 		for msg := range msgs {
-			lf(msg)
+			lf(msg.Body)
 		}
-	}
+	}()
+
+	return nil
 }

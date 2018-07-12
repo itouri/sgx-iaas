@@ -10,36 +10,34 @@ type RabbitNotifyClient struct {
 	channel   *amqp.Channel
 }
 
-func NewRabbitNotifyClient(url string, queueName string) (*RabbitNotifyClient, error) {
-	return nil, &RabbitNotifyClient{
+func NewRabbitNotifyClient(url string, queueName string) *RabbitNotifyClient {
+	return &RabbitNotifyClient{
 		Url:       url,
 		QueueName: queueName,
-		channel:   ch,
 	}
 }
 
-func (*r RabbitNotifyClient) Start() error 
-{
-	conn, err := amqp.Dial(url)
+func (r *RabbitNotifyClient) Start() error {
+	conn, err := amqp.Dial(r.Url)
 	if err != nil {
 		defer conn.Close()
 		return err
 	}
 
-	r.ch, err := conn.Channel()
+	r.channel, err = conn.Channel()
 	if err != nil {
-		defer ch.Close()
+		defer r.channel.Close()
 		return err
 	}
 
-	err = r.ch.ExchangeDeclare(
-		r.QueueName,   // name
-		"topic", // type
-		true,     // durable
-		false,    // auto-deleted
-		false,    // internal
-		false,    // no-wait
-		nil,      // arguments
+	err = r.channel.ExchangeDeclare(
+		r.QueueName, // name
+		"topic",     // type
+		true,        // durable
+		false,       // auto-deleted
+		false,       // internal
+		false,       // no-wait
+		nil,         // arguments
 	)
 	if err != nil {
 		return err
@@ -47,16 +45,16 @@ func (*r RabbitNotifyClient) Start() error
 	return nil
 }
 
-func (*r RabbitNotifyClient) Send(body []byte) error 
-{
-	err = ch.Publish(
+func (r *RabbitNotifyClient) Send(body []byte) error {
+	err := r.channel.Publish(
 		r.QueueName, // exchange
-		"",     // routing key
-		false,  // mandatory
-		false,  // immediate
+		"",          // routing key
+		false,       // mandatory
+		false,       // immediate
 		amqp.Publishing{
-				ContentType: "text/plain",
-				Body:        body,
-		}
+			ContentType: "text/plain",
+			Body:        body,
+		},
 	)
+	return err
 }
