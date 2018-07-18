@@ -15,7 +15,7 @@ func NewTansport(driverStr string, url string) *Transport {
 	var driver driver.Driver
 	switch driverStr {
 	case "rabbit":
-
+		driver = New
 	}
 
 	return &Transport{

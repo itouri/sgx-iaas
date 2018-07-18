@@ -12,8 +12,8 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.GET("/v1/images", api.GetImage)
-	e.GET("/v1/images/:image_id", api.GetAllImages)
+	e.GET("/v1/images/:image_id", api.GetImage)
+	e.GET("/v1/images/", api.GetAllImages)
 	e.POST("/v1/images", api.PostImage)
 	e.DELETE("/v1/images", api.GetImage)
 

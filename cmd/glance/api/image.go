@@ -10,12 +10,9 @@ type Req struct {
 }
 
 func GetImage(c domain.Context) error {
-	req := &Req{}
+	imageID := c.Param("image_id")
 
-	err := c.Bind(req)
-	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
-	}
+	// imageの参照先のurlを返せばいいのかな
 
 	return nil
 }

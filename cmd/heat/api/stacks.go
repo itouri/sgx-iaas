@@ -14,6 +14,10 @@ type Req struct {
 }
 
 func GetStacks(c domain.Context) error {
+
+}
+
+func PostStack(c domain.Context) error {
 	req := &Req{}
 
 	err := c.Bind(req)

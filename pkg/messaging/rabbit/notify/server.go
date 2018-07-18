@@ -9,6 +9,7 @@ type ListenFunc func([]byte)
 type RabbitNotifyServer struct {
 	Url       string
 	QueueName string
+	conn      *amqp.Connection
 	channel   *amqp.Channel
 }
 
@@ -19,14 +20,16 @@ func NewRabbitNotifyServer(url string, queueName string) *RabbitNotifyServer {
 	}
 }
 
+//TODO connection, channelの管理方法
 func (r *RabbitNotifyServer) Start() error {
-	conn, err := amqp.Dial(r.Url)
+	var err error
+	r.conn, err = amqp.Dial(r.Url)
 	if err != nil {
-		defer conn.Close()
+		defer r.conn.Close()
 		return err
 	}
 
-	r.channel, err = conn.Channel()
+	r.channel, err = r.conn.Channel()
 	if err != nil {
 		defer r.channel.Close()
 		return err
@@ -45,6 +48,11 @@ func (r *RabbitNotifyServer) Start() error {
 		return err
 	}
 	return nil
+}
+
+func (r *RabbitNotifyServer) Stop() {
+	r.conn.Close()
+	r.channel.Close()
 }
 
 func (r *RabbitNotifyServer) Listen(lf ListenFunc) error {
