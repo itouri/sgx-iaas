@@ -1,6 +1,6 @@
 package agent
 
-// 実際に収集する
-func Polling() {
-	
+// メッセージキューから来たデータを処理する
+func Collector(b []byte) {
+
 }

@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/itouri/sgx-iaas/cmd/heat/engine"
 	"github.com/itouri/sgx-iaas/pkg/domain"
 	"github.com/itouri/sgx-iaas/pkg/domain/heat"
 
@@ -35,6 +36,7 @@ func PostStack(c domain.Context) error {
 	}
 
 	//TODO valitation
+	engine.RegisterStack(template)
 
 	return nil
 }
