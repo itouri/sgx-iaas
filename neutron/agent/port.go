@@ -40,6 +40,7 @@ func ConnectPort(bridgeType neutron.EnumBridgeType, network neutron.Network) err
 	exec.Command("ip", "link", "set", nid, "netns", nid)
 
 	//TODO ip address を付与
+	// これはDHCPがやるからいいのでは？
 	// exec.Command("ip", "netns", "exec", nid, "ifconfig", nid, IPAddr)
 
 	// veth pair を活性化
