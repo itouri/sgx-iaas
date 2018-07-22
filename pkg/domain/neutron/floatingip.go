@@ -1,9 +1,19 @@
 package neutron
 
-import "net"
+import (
+	"net"
+)
+
+type EnumStatus int
+
+const (
+	Active EnumStatus = iota + 1
+	Down
+)
 
 type FloatingIP struct {
-	IPAddr      net.IP
-	FixedIPAddr net.IP
-	Active      bool
+	Address        net.IP
+	FixedIPAddress net.IP
+	Status         EnumStatus
+	// RouterID       string
 }
