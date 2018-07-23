@@ -1,12 +1,14 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/itouri/sgx-iaas/cmd/heat/engine"
 	"github.com/itouri/sgx-iaas/pkg/domain"
 	"github.com/itouri/sgx-iaas/pkg/domain/heat"
 
+	uuid "github.com/satori/go.uuid"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -33,6 +35,24 @@ func PostStack(c domain.Context) error {
 	if err != nil {
 		//TODO StatusOKではない
 		return c.String(http.StatusOK, err.Error())
+	}
+
+	alarmMap := map[string]uuid.UUID
+
+	//TODO これだとtemplateに反映されてない?
+	// AlarmにUUIDを割り当てる
+	for _, alarm := range template.Alarms {
+		alarm.ID = uuid.Must(uuid.NewV4())
+		alarmMap[alarm.AlarmAction] = alarm.ID
+	}
+
+	for _, sp := range template.ScalingPolicies {
+		id, ok := alarmMap[sp.Name]
+		if ok {
+			sp.AlarmID = id
+		} else {
+			return fmt.Errorf("doesn't exist scaling policis maped alarm ID")
+		}
 	}
 
 	//TODO valitation

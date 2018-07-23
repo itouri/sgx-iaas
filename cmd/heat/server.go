@@ -14,7 +14,9 @@ func main() {
 
 	e.GET("/v1/stacks", api.GetStack)
 	e.GET("/v1/stacks", api.GetAllStacks)
-	e.POST("/v1/stacks", api.PostImage)
+	e.POST("/v1/stacks", api.PostStack)
+
+	e.GET("/v1/action/:action_id", api.PostAction)
 
 	e.Start(":1323")
 }

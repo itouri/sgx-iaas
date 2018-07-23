@@ -1,5 +1,9 @@
 package heat
 
+import (
+	uuid "github.com/satori/go.uuid"
+)
+
 type ASGProperty struct {
 	Flavor string `yaml:"flavor"`
 	Image  string `yaml:"image"`
@@ -13,6 +17,7 @@ type AutoScalingGroup struct {
 }
 
 type ScalingPolicy struct {
+	AlarmID              uuid.UUID
 	Name                 string `yaml:"name"`
 	AutoScalingGroupName string `yaml:"auto-scaling-group-name"`
 	Cooldown             int    `yaml:"cooldown"`
@@ -31,10 +36,11 @@ const (
 )
 
 type Alarm struct {
+	ID                 uuid.UUID
 	Name               string  `yaml:"name"`
 	MeterName          string  `yaml:"meter-name"` // string?
 	Threshold          float32 `yaml:"threshold"`
-	AlarmActions       string  `yaml:"alarm-actions"`
+	AlarmAction        string  `yaml:"alarm-action"`
 	ComparisonOperator string  `yaml:"comparison-operator"`
 }
 

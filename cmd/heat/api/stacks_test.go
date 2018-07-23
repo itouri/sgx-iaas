@@ -26,12 +26,12 @@ alarms:
   meter-name: cpu
   threshold: 1
   comparison-operator: gt
-  alarm-actions: tmp_sp
+  alarm-action: tmp_sp
 - name: mem_vm_scaleup_policy
   meter-name: mem
   threshold: 2
   comparison-operator: gt
-  alarm-actions: tmp_sp
+  alarm-action: tmp_sp
 `
 
 func TestParseYaml(t *testing.T) {
