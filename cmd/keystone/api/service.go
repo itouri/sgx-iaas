@@ -26,11 +26,15 @@ func GetAllServices(c domain.Context) error {
 }
 
 func PostService(c domain.Context) error {
-	req := &Req{}
+	type Req struct {
+		Name   string `json:"name" validate:"required"`
+		Type   string `json:"type" validate:"required"`
+		IPAddr string `json:"ip_address" validate:"required"`
+	}
+	req := new(Req)
 
-	err := c.Bind(req)
-	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+	if err := c.BindValidate(u); err != nil {
+		return err
 	}
 
 	return nil

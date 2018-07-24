@@ -6,9 +6,6 @@ import (
 	"github.com/itouri/sgx-iaas/pkg/domain"
 )
 
-type Req struct {
-}
-
 func GetEndpoint(c domain.Context) error {
 	endpointID := c.Param("endpoint_id")
 
@@ -29,13 +26,16 @@ func GetAllEndpoints(c domain.Context) error {
 }
 
 func PostEndpoint(c domain.Context) error {
-	req := &Req{}
-
+	type Req struct {
+		Enabled   string `json:enabled`
+		ServiceID string `json:service_id`
+		URL       string `json:url`
+	}
+	req := new(Req)
 	err := c.Bind(req)
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-
 	return nil
 }
 

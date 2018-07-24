@@ -12,13 +12,13 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	// endpoints
-	e.GET("/v1/endpoints", api.GetAllEndPoints)
-	e.POST("/v1/endpoints", api.PostEndPoint)
+	// // endpoints
+	// e.GET("/v1/endpoints", api.GetAllEndPoints)
+	// e.POST("/v1/endpoints", api.PostEndPoint)
 
-	e.GET("/v1/endpoints/:endpoint_id", api.GetEndPoint)
-	e.PATCH("/v1/endpoints/:endpoint_id", api.PatchEndPoint)
-	e.DELETE("/v1/endpoints/:endpoint_id", api.DeleteEndPoint)
+	// e.GET("/v1/endpoints/:endpoint_id", api.GetEndPoint)
+	// e.PATCH("/v1/endpoints/:endpoint_id", api.PatchEndPoint)
+	// e.DELETE("/v1/endpoints/:endpoint_id", api.DeleteEndPoint)
 
 	// services
 	e.GET("/v1/services", api.GetAllServices)
