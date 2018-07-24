@@ -18,12 +18,12 @@ const (
 )
 
 type Service struct {
-	ID      uuid.UUID
-	Enabled bool
-	Name    string
-	Type    EnumServiceType //TODO to enum
+	ID      uuid.UUID       `json:"id"`
+	Enabled bool            `json:"enabled"`
+	Name    string          `json:"name"`
+	Type    EnumServiceType `json:"type"` //TODO to enum
 	// Links     string   // need not?
 	//EndPoints []EndPoint
 	// URL    string URLにしたら誰がDNSするんだ？
-	IPAddr net.IP
+	IPAddr net.IP `json:"ip_address"`
 }

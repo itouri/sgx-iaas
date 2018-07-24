@@ -19,6 +19,15 @@ func init() {
 // 	}
 // }
 
+func GetServiceWithID(id uuid.UUID) *keystone.Service {
+	for _, s := range services {
+		if s.ID == id {
+			return &s
+		}
+	}
+	return nil
+}
+
 func RegisterService(service *keystone.Service) {
 	services = append(services, *service)
 }
