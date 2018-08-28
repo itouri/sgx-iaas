@@ -18,3 +18,9 @@ func PostAlarm(c domain.Context) error {
 	agent.RegisterAlarm(alarm)
 	return nil
 }
+
+func DeleteAlarm(c domain.Context) error {
+	alarmID := c.Param("alarm_id")
+	agent.RegisterAlarm(alarm)
+	return nil
+}

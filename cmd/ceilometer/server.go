@@ -13,6 +13,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	e.POST("/v1/alarm", api.PostAlarm())
+	e.DELETE("/v1/alarm/:alarm_id", api.DeleteAlarm())
 
 	e.Start(":1323")
 }
