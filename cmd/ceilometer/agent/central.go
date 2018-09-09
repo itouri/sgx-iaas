@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 
+	"github.com/itouri/sgx-iaas/cmd/ceilometer/notifier"
 	"github.com/itouri/sgx-iaas/pkg/domain/ceilometer"
 )
 
@@ -60,11 +61,13 @@ func compare(tel *ceilometer.Telemetry) {
 		}
 
 		if alarming {
-			// msg := []byte(alarm.AlarmAction)
-			// notifier.Send(msg)
+			msg := []byte(alarm.AlarmAction)
+			notifier.Send(msg)
 
 			//TODO
-			// resp, err := http.Post(heatURL, alarm.AlarmAction)
+			// heatに情報を送るためにはendpointからIPを解決する必要がある
+			// ip, port := http.Get(endpointURL + heat)
+			// resp, err := http.Post(heatURL + /alarm.AlarmAction)
 		}
 	}
 }

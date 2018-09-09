@@ -12,7 +12,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	// // endpoints
+	// endpoint -> serviceに統一
 	// e.GET("/v1/endpoints", api.GetAllEndPoints)
 	// e.POST("/v1/endpoints", api.PostEndPoint)
 

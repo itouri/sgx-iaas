@@ -5,11 +5,18 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/itouri/sgx-iaas/cmd/glance/interactor"
 	"github.com/itouri/sgx-iaas/pkg/domain"
 	uuid "github.com/satori/go.uuid"
 )
 
-const imagePath = "./images/"
+var imageInteractor *interactor.ImageInteractor
+
+func init() {
+	imageInteractor = &interactor.ImageInteractor{
+		Path: "/home/image/"
+	}
+}
 
 func GetImage(c domain.Context) error {
 	imageID := c.Param("image_id")
@@ -30,25 +37,12 @@ func PostImage(c domain.Context) error {
 		return err
 	}
 
-	src, err := file.Open()
+	id, err := imageInteractor.StoreFile(file)
 	if err != nil {
 		return err
 	}
-	defer src.Close()
 
-	id := uuid.Must(uuid.NewV4())
-
-	dstFile, err := os.Create(imagePath + id)
-	if err != nil {
-		return err
-	}
-	defer dstFile.Close()
-
-	if _, err = io.Copy(dstFile, src); err != nil {
-		return err
-	}
-
-	return c.String(http.StatusOK, id)
+	return c.String(http.StatusOK, id.String())
 }
 
 func DeleteImage(c domain.Context) error {

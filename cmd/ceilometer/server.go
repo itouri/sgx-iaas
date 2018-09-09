@@ -12,6 +12,8 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	// e.GET("/v1/alarm", api.PostAlarm())
+
 	e.POST("/v1/alarm", api.PostAlarm())
 	e.DELETE("/v1/alarm/:alarm_id", api.DeleteAlarm())
 

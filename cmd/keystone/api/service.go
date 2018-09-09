@@ -4,9 +4,42 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/itouri/sgx-iaas/cmd/keystone/catalog"
+	"github.com/itouri/sgx-iaas/cmd/keystone/interactor"
 	"github.com/itouri/sgx-iaas/pkg/domain"
+	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 )
+
+var serviceInteractor *interactor.ServiceInteractor
+
+func init() {
+	serviceInteractor = &interactor.ServiceInteractor{}
+}
+
+func GetServiceResolve(c domain.Context) error {
+	serviceTypeStr := c.Param("service_type")
+	serviceType := keystone.ToEnumServiceType(serviceTypeStr)
+	if serviceType == -1 {
+		return err
+	}
+
+	service, err := serviceInteractor.FindByServiceType(serviceType)
+	if err := nil {
+		return err
+	}
+
+	type resp struct {
+		id   string
+		port uint
+		ip   string
+	}
+
+	res := resp {
+		id: service.ID.String(),
+		port: intservice.Port,
+		ip: service.IPAddr.String(),
+	}
+	c.JSON(http.StatusOK, res)
+}
 
 func GetService(c domain.Context) error {
 	serviceID := c.Param("service_id")

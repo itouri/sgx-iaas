@@ -1,5 +1,6 @@
 # db
 etcdもKVSだしKVSにしよう
+KVSにした理由は？
 
 ## ceilometer
 

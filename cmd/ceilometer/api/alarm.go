@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/itouri/sgx-iaas/cmd/ceilometer/agent"
+	"github.com/itouri/sgx-iaas/cmd/ceilometer/interactor"
 	"github.com/itouri/sgx-iaas/pkg/domain"
 	"github.com/itouri/sgx-iaas/pkg/domain/heat"
 )
@@ -15,12 +15,12 @@ func PostAlarm(c domain.Context) error {
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	agent.RegisterAlarm(alarm)
+	interactor.InsertAlarm(alarm)
 	return nil
 }
 
 func DeleteAlarm(c domain.Context) error {
 	alarmID := c.Param("alarm_id")
-	agent.RegisterAlarm(alarm)
+	interactor.DeleteAlarm(alarmID)
 	return nil
 }

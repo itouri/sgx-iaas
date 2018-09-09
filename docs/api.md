@@ -19,6 +19,8 @@ POST /stacks
 DELETE /stacks/:stack_id
 
 ## keystone(endpoint)
+GET /services/resolve/:service_type
+
 GET /services/:service_id
 GET /services
 POST /services
