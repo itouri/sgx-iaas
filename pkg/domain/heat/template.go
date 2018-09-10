@@ -35,17 +35,18 @@ const (
 	Ne                                   // !=
 )
 
+// TODO bsonとyamlは同じなんだけど２回かかなきゃダメ？
 type Alarm struct {
-	ID                 uuid.UUID
-	Name               string  `yaml:"name"`
-	MeterName          string  `yaml:"meter-name"` // string?
-	Threshold          float32 `yaml:"threshold"`
-	AlarmAction        string  `yaml:"alarm-action"`
-	ComparisonOperator string  `yaml:"comparison-operator"`
+	ID                 uuid.UUID `bson:"alarm_id"`
+	Name               string    `bson:"name" yaml:"name"`
+	MeterName          string    `bson:"meter_name" yaml:"meter-name"` // string?
+	Threshold          float32   `bson:"threshold" yaml:"threshold"`
+	AlarmAction        string    `bson:"alarm_action" yaml:"alarm-action"`
+	ComparisonOperator string    `bson:"comparison_operator" yaml:"comparison-operator"`
 }
 
 type Template struct {
-	AutoScalingGroups []AutoScalingGroup `yaml:"auto-scaling-groups"`
-	ScalingPolicies   []ScalingPolicy    `yaml:"scaling-policies"`
-	Alarms            []Alarm            `yaml:"alarms"`
+	AutoScalingGroups []AutoScalingGroup `bson:"auto_scaling_groups" yaml:"auto-scaling-groups"`
+	ScalingPolicies   []ScalingPolicy    `bson:"scaling_policies" yaml:"scaling-policies"`
+	Alarms            []Alarm            `bson:"alarms" yaml:"alarms"`
 }

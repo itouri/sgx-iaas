@@ -35,8 +35,8 @@ func (mh *MongoHandler) FindOne(collection string, query interface{}, res interf
 	return mh.Db.C(collection).Find(query).One(res)
 }
 
-func (mh *MongoHandler) FindAll(collection string, res interface{}) error {
-	return mh.Db.C(collection).Find(nil).All(res)
+func (mh *MongoHandler) FindAll(collection string, query interface{}, res interface{}) error {
+	return mh.Db.C(collection).Find(query).All(res)
 }
 
 func (mh *MongoHandler) Upsert(collection string, query interface{}, upsert interface{}) error {

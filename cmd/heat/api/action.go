@@ -1,9 +1,15 @@
 package api
 
 import (
-	"github.com/itouri/sgx-iaas/cmd/heat/engine"
+	"github.com/itouri/sgx-iaas/cmd/heat/interactor"
 	"github.com/itouri/sgx-iaas/pkg/domain"
 )
+
+var alarmInteractor *interactor.AlarmInteractor
+
+func init() {
+	alarmInteractor = &interactor.AlarmInteractor{}
+}
 
 type Req struct {
 	Template string `json:"template"`
@@ -11,6 +17,6 @@ type Req struct {
 
 func PostAction(c domain.Context) error {
 	actionID := c.Param("action_id")
-	alarm := engine.GetAlarmWithID(actionID)
+	alarm := interactor.FindByAlarmID(actionID)
 
 }

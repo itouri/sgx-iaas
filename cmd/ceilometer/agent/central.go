@@ -1,8 +1,8 @@
 package agent
 
 import (
-	"bytes"
-	"encoding/binary"
+	"encoding/json"
+	"fmt"
 
 	"github.com/itouri/sgx-iaas/cmd/ceilometer/notifier"
 	"github.com/itouri/sgx-iaas/pkg/domain/ceilometer"
@@ -12,8 +12,12 @@ import (
 func Collector(b []byte) {
 	// []byteを構造体へキャスト
 	telemetry := &ceilometer.Telemetry{}
-	reader := bytes.NewReader(b)
-	binary.Read(reader, binary.LittleEndian, telemetry)
+	err := json.Unmarshal(b, telemetry)
+	if err != nil {
+		// TODO return err
+		fmt.Println(err)
+		return
+	}
 
 	// 登録されたStackのTemplateと比較
 	compare(telemetry)
@@ -61,13 +65,13 @@ func compare(tel *ceilometer.Telemetry) {
 		}
 
 		if alarming {
-			msg := []byte(alarm.AlarmAction)
+			msg := []byte(alarm.ID.String())
 			notifier.Send(msg)
 
 			//TODO
 			// heatに情報を送るためにはendpointからIPを解決する必要がある
 			// ip, port := http.Get(endpointURL + heat)
-			// resp, err := http.Post(heatURL + /alarm.AlarmAction)
+			// resp, err := http.Post(heatURL + /alarm.ID)
 		}
 	}
 }

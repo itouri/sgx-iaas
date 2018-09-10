@@ -3,12 +3,18 @@ package api
 import (
 	"net/http"
 
-	"github.com/itouri/sgx-iaas/cmd/heat/engine"
+	"github.com/itouri/sgx-iaas/cmd/heat/interactor"
 	"github.com/itouri/sgx-iaas/pkg/domain"
 	"github.com/itouri/sgx-iaas/pkg/domain/heat"
 
 	yaml "gopkg.in/yaml.v2"
 )
+
+var tempInteractor *interactor.TemplateInteractor
+
+func init() {
+	tempInteractor = &interactor.TemplateInteractor{}
+}
 
 type Req struct {
 	Template string `json:"template"`
@@ -36,8 +42,10 @@ func PostStack(c domain.Context) error {
 	}
 
 	//TODO valitation
-
-	engine.RegisterStack(template)
+	tempInteractor.InsertTemplate(template)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
