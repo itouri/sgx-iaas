@@ -10,5 +10,6 @@ func main() {
 	qName := "ceilometer"
 	server := notify.NewRabbitNotifyServer(url, qName)
 	server.Start()
+	// TODO error handle
 	server.Listen(agent.Collector)
 }

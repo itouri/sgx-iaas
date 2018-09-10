@@ -27,17 +27,11 @@ func GetServiceResolve(c domain.Context) error {
 		return err
 	}
 
-	type resp struct {
-		id   string
-		port uint
-		ip   string
+	res, err := json.Marshal(service)
+	if err := nil {
+		return err
 	}
-
-	res := resp {
-		id: service.ID.String(),
-		port: intservice.Port,
-		ip: service.IPAddr.String(),
-	}
+	
 	c.JSON(http.StatusOK, res)
 }
 

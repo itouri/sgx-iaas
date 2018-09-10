@@ -3,27 +3,27 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 
-	"github.com/itouri/sgx-iaas/cmd/ceilometer/notifier"
 	"github.com/itouri/sgx-iaas/pkg/domain/ceilometer"
+	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 )
 
 // メッセージキューから来たデータを処理する
-func Collector(b []byte) {
+func Collector(b []byte) error {
 	// []byteを構造体へキャスト
 	telemetry := &ceilometer.Telemetry{}
 	err := json.Unmarshal(b, telemetry)
 	if err != nil {
-		// TODO return err
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	// 登録されたStackのTemplateと比較
-	compare(telemetry)
+	return compare(telemetry)
 }
 
-func compare(tel *ceilometer.Telemetry) {
+func compare(tel *ceilometer.Telemetry) error {
 	//TODO so dirty!!!
 	for _, alarm := range registeredAlarms {
 		var value float32
@@ -65,13 +65,50 @@ func compare(tel *ceilometer.Telemetry) {
 		}
 
 		if alarming {
-			msg := []byte(alarm.ID.String())
-			notifier.Send(msg)
+			// ???
+			//msg := []byte(alarm.ID.String())
+			//notifier.Send(msg)
 
-			//TODO
+			endpointURL := ""
 			// heatに情報を送るためにはendpointからIPを解決する必要がある
-			// ip, port := http.Get(endpointURL + heat)
-			// resp, err := http.Post(heatURL + /alarm.ID)
+			resp, err := http.Get(endpointURL + "/services/resolve/" + "heat")
+			if err != nil {
+				return err
+			}
+
+			service := &keystone.Service{}
+			err = decodeJSON(resp, service)
+			if err != nil {
+				return err
+			}
+
+			heatURL := "http://" + service.IPAddr.String() + ":" + string(service.Port) + "/"
+
+			resp, err = http.Post(heatURL, "application/json", nil)
+			if err != nil {
+				return err
+			}
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("status code is %d", resp.StatusCode)
+			}
 		}
 	}
+}
+
+func decodeJSON(resp *http.Response, v interface{}) error {
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("status code is %d", resp.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(body, v)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
