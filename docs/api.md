@@ -59,9 +59,10 @@ GET /stacks/:stack_id
 POST /stacks
 
 ## nova
-POST /vm/:image_id/create
+POST /vm/:image_id/
+DELETE /vm/:image_id/
 
-GET /vm/status/:image_id
+GET /vm/status/:vm_id
 GET /vm/status
 
 ## compute

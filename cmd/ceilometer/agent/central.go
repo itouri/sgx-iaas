@@ -3,9 +3,9 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
+	"github.com/itouri/sgx-iaas/cmd/keystone/util"
 	"github.com/itouri/sgx-iaas/pkg/domain/ceilometer"
 	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 )
@@ -65,49 +65,31 @@ func compare(tel *ceilometer.Telemetry) error {
 		}
 
 		if alarming {
-			// ???
-			//msg := []byte(alarm.ID.String())
-			//notifier.Send(msg)
-
-			endpointURL := ""
-			// heatに情報を送るためにはendpointからIPを解決する必要がある
-			resp, err := http.Get(endpointURL + "/services/resolve/" + "heat")
-			if err != nil {
+			if err := alarmToHeat(); err != nil {
 				return err
-			}
-
-			service := &keystone.Service{}
-			err = decodeJSON(resp, service)
-			if err != nil {
-				return err
-			}
-
-			heatURL := "http://" + service.IPAddr.String() + ":" + string(service.Port) + "/"
-
-			resp, err = http.Post(heatURL, "application/json", nil)
-			if err != nil {
-				return err
-			}
-			if resp.StatusCode != http.StatusOK {
-				return fmt.Errorf("status code is %d", resp.StatusCode)
 			}
 		}
 	}
+	return nil
 }
 
-func decodeJSON(resp *http.Response, v interface{}) error {
+func alarmToHeat() error {
+	// ???
+	//msg := []byte(alarm.ID.String())
+	//notifier.Send(msg)
+
+	endpointURL := ""
+	heatURL, err := util.ResolveServiceEndpoint(endpointURL, keystone.Heat)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(heatURL, "application/json", nil)
+	if err != nil {
+		return err
+	}
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("status code is %d", resp.StatusCode)
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(body, v)
-	if err != nil {
-		return err
 	}
 
 	return nil

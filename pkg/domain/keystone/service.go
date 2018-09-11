@@ -11,21 +11,23 @@ type EnumServiceType int
 const (
 	Compute EnumServiceType = iota + 1
 	// Ec2
-	Identity
-	Image
-	Network
-	Volume
+	Ceilometer
+	Glance
+	Newtron
+	Nova
+	Heat
 )
 
 func (s EnumServiceType) String() string {
 	names := [...]string{
 		"Compute",
-		"Identity",
-		"Image",
-		"Network",
-		"Volume",
+		"Ceilometer",
+		"Glance",
+		"Newtron",
+		"Nova",
+		"Heat",
 	}
-	if s < Compute || Volume < s {
+	if s < Compute || Heat < s {
 		return ""
 	}
 	return names[s]
@@ -35,14 +37,16 @@ func ToEnumServiceType(str string) EnumServiceType {
 	switch str {
 	case "Compute":
 		return Compute
-	case "Identity":
-		return Identity
-	case "Image":
-		return Identity
-	case "Network":
-		return Network
-	case "Volume":
-		return Volume
+	case "Ceilometer":
+		return Ceilometer
+	case "Glance":
+		return Glance
+	case "Newtron":
+		return Newtron
+	case "Nova":
+		return Nova
+	case "Heat":
+		return Heat
 	default:
 		return -1
 	}
