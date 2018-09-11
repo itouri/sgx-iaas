@@ -17,4 +17,5 @@ image list
 
 ## heat
 templete register [:file_path]
+templete delete [:templete_id] //TODO this is correct?
 templete list
