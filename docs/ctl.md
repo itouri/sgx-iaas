@@ -3,10 +3,10 @@
 iaas
 
 ## nova
-vm create --image-id [:image_id]
-vm delete --image-id [:image_id]
-// vm stop --image-id [:image_id]
-// vm start --image-id [:image_id]
+vm create [:image_id]
+vm delete [:image_id]
+// vm stop [:image_id]
+// vm start [:image_id]
 vm list
 
 ## glance

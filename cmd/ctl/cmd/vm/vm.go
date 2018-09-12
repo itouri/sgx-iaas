@@ -1,11 +1,13 @@
-package cmd
+package vm
 
 import (
+	"github.com/itouri/sgx-iaas/cmd/ctl/cmd"
+
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	// TODO AddCommand to Root
+	cmd.RootCmd.AddCommand(newVMCmd())
 }
 
 func newVMCmd() *cobra.Command {
@@ -20,7 +22,7 @@ func newVMCmd() *cobra.Command {
 	cmd.AddCommand(
 		newCreateCmd(),
 		newDeleteCmd(),
-		newListCmd(),
+		// TODO newListCmd(),
 	)
 
 	return cmd

@@ -88,6 +88,7 @@ func alarmToHeat() error {
 	if err != nil {
 		return err
 	}
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("status code is %d", resp.StatusCode)
 	}

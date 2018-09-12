@@ -60,10 +60,10 @@ POST /stacks
 
 ## nova
 POST /vm/:image_id/
-DELETE /vm/:image_id/
+DELETE /vm/:vm_id/
 
 GET /vm/status/:vm_id
 GET /vm/status
 
 ## compute
-POST /vm/:image_id/create
+POST /vm/:image_id/
