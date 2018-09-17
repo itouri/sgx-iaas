@@ -16,6 +16,7 @@ const (
 	Newtron
 	Nova
 	Heat
+	RA
 )
 
 func (s EnumServiceType) String() string {
@@ -26,8 +27,9 @@ func (s EnumServiceType) String() string {
 		"Newtron",
 		"Nova",
 		"Heat",
+		"RA",
 	}
-	if s < Compute || Heat < s {
+	if s < Compute || RA < s {
 		return ""
 	}
 	return names[s]
@@ -47,6 +49,8 @@ func ToEnumServiceType(str string) EnumServiceType {
 		return Nova
 	case "Heat":
 		return Heat
+	case "RA":
+		return RA
 	default:
 		return -1
 	}

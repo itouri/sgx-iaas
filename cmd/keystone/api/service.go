@@ -32,7 +32,7 @@ func GetServiceResolve(c domain.Context) error {
 		return err
 	}
 	
-	c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, res)
 }
 
 func GetService(c domain.Context) error {

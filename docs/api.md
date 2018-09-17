@@ -67,3 +67,6 @@ GET /vm/status
 
 ## compute
 POST /vm/:image_id/
+
+## ra
+GET /ra/image_crypto_key
