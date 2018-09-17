@@ -50,6 +50,7 @@ func PostVMCreate(c domain.Context) error {
 
 	// TODO scheduling
 	
+	// 
 
 	return nil
 }

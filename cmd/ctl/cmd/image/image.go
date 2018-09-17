@@ -22,7 +22,7 @@ func newImageCmd() *cobra.Command {
 		newCryptoCmd(),
 		newDeleteCmd(),
 		newListCmd(),
-		newResiterCmd(),
+		newRegisterCmd(),
 	)
 
 	return cmd

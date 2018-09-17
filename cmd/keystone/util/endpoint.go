@@ -25,7 +25,6 @@ func ResolveServiceEndpoint(endpointURL string, st keystone.EnumServiceType) (st
 	}
 
 	url := "http://" + service.IPAddr.String() + ":" + string(service.Port)
-
 	return url, nil
 }
 

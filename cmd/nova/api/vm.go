@@ -48,7 +48,8 @@ func PostVMCreate(c domain.Context) error {
 
 	// TODO scheduling
 
-	//
+	// 
+	
 
 	return nil
 }
@@ -60,6 +61,7 @@ func DeleteService(c domain.Context) error {
 	}
 
 	// TODO ...
+
 
 	return nil
 }

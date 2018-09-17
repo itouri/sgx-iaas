@@ -42,11 +42,6 @@ func runDeleteCmd(command *cobra.Command, args []string) error {
 		return fmt.Errorf("status code is %d", resp.StatusCode)
 	}
 
-	// body, err := ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return err
-	// }
-
 	fmt.Println(resp.StatusCode)
 	return nil
 }

@@ -4,6 +4,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	cmd.RootCmd.AddCommand(newTempleteCmd())
+}
+
 func newTempleteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "Templete",
