@@ -1,3 +1,3 @@
 package domain
 
-type IPAdress 
+// type IPAdress

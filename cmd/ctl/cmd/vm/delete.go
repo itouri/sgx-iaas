@@ -5,19 +5,19 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/itouri/sgx-iaas/cmd/ctl/cmd"
+	"github.com/itouri/sgx-iaas/cmd/keystone/util"
 	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 	"github.com/spf13/cobra"
 )
 
 func newDeleteCmd() *cobra.Command {
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:   "delete <VMID>",
 		Short: "delete vm from image",
 		RunE:  runDeleteCmd,
 	}
 
-	return cmd
+	return command
 }
 
 func runDeleteCmd(command *cobra.Command, args []string) error {
@@ -25,7 +25,7 @@ func runDeleteCmd(command *cobra.Command, args []string) error {
 		log.Fatalf("Please provide a VM ID.")
 	}
 
-	novaURL, err := cmd.GetEndPoint(keystone.Nova)
+	novaURL, err := util.GetEndPoint(keystone.Nova)
 	if err != nil {
 		return err
 	}

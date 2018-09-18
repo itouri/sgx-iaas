@@ -1,24 +1,25 @@
 package image
 
 import (
-	"fmt"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 
-	"github.com/itouri/sgx-iaas/cmd/ctl/cmd"
+	"github.com/itouri/sgx-iaas/cmd/keystone/util"
 	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 	"github.com/spf13/cobra"
 )
 
 func newRegisterCmd() *cobra.Command {
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:   "register <FilePath>",
 		Short: "register stack",
 		RunE:  runRegisterCmd,
 	}
 
-	return cmd
+	return command
 }
 
 func runRegisterCmd(command *cobra.Command, args []string) error {
@@ -26,7 +27,7 @@ func runRegisterCmd(command *cobra.Command, args []string) error {
 		log.Fatalf("Please provide a File Path.")
 	}
 
-	glanceURL, err := cmd.GetEndPoint(keystone.Glance)
+	glanceURL, err := util.GetEndPoint(keystone.Glance)
 	if err != nil {
 		return err
 	}
@@ -37,20 +38,25 @@ func runRegisterCmd(command *cobra.Command, args []string) error {
 	}
 	defer file.Close()
 
-	resp, err := http.Post(glanceURL, "application/zip", nil)
+	w := multipart.NewWriter(&buf)
+
+	fw, err := w.CreateFormFile("file", file)
 	if err != nil {
 		return err
 	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status code is %d", resp.StatusCode)
+	if _, err = io.Copy(fw, file); err != nil {
+		return err
 	}
+	w.Close()
 
-	// body, err := ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return err
-	// }
+	req, err := http.NewRequest(http.MethodPost, uri, &buf)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", w.FormDataContentType())
 
-	fmt.Println(resp.StatusCode)
-	return nil
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
 }

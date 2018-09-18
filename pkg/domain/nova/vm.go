@@ -17,7 +17,7 @@ func init() {
 	vmInteractor = &interactor.VMInteractor{}
 }
 
-func GetVMStatus(c domain.Context) error {
+func GetVMStatus(c echo.Context) error {
 	VMID := c.Param("vm_id")
 	if VMID == "" {
 		return c.String(http.StatusBadRequest, err.Error())
@@ -32,7 +32,7 @@ func GetVMStatus(c domain.Context) error {
 	return nil
 }
 
-func GetAllVMStatus(c domain.Context) error {
+func GetAllVMStatus(c echo.Context) error {
 	service := catalog.GetAllServices
 	ret, err := json.Marshal(service)
 	if err != nil {
@@ -42,7 +42,7 @@ func GetAllVMStatus(c domain.Context) error {
 	return nil
 }
 
-func PostVMCreate(c domain.Context) error {
+func PostVMCreate(c echo.Context) error {
 	imageID := c.Param("image_id")
 	if imageID == "" {
 		return c.String(http.StatusBadRequest, err.Error())
@@ -55,7 +55,7 @@ func PostVMCreate(c domain.Context) error {
 	return nil
 }
 
-func DeleteService(c domain.Context) error {
+func DeleteService(c echo.Context) error {
 	serviceID := c.Param("service_id")
 
 	err := c.Bind(req)

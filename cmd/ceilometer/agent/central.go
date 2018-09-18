@@ -78,7 +78,7 @@ func alarmToHeat() error {
 	//msg := []byte(alarm.ID.String())
 	//notifier.Send(msg)
 
-	endpointURL := ""
+	endpointURL := util.GetEndpointURL()
 	heatURL, err := util.ResolveServiceEndpoint(endpointURL, keystone.Heat)
 	if err != nil {
 		return err

@@ -9,7 +9,7 @@ import (
 )
 
 // alarm structを受け取る
-func PostAlarm(c domain.Context) error {
+func PostAlarm(c echo.Context) error {
 	alarm := new(heat.Alarm)
 	err := c.Bind(alarm)
 	if err != nil {
@@ -19,7 +19,7 @@ func PostAlarm(c domain.Context) error {
 	return nil
 }
 
-func DeleteAlarm(c domain.Context) error {
+func DeleteAlarm(c echo.Context) error {
 	alarmID := c.Param("alarm_id")
 	interactor.DeleteAlarm(alarmID)
 	return nil

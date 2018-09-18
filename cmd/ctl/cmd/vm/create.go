@@ -6,19 +6,19 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/itouri/sgx-iaas/cmd/ctl/cmd"
+	"github.com/itouri/sgx-iaas/cmd/keystone/util"
 	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 	"github.com/spf13/cobra"
 )
 
 func newCreateCmd() *cobra.Command {
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:   "create <ImageID>",
 		Short: "create vm from image",
 		RunE:  runCreateCmd,
 	}
 
-	return cmd
+	return command
 }
 
 func runCreateCmd(command *cobra.Command, args []string) error {
@@ -26,7 +26,7 @@ func runCreateCmd(command *cobra.Command, args []string) error {
 		log.Fatalf("Please provide a ImageID")
 	}
 
-	novaURL, err := cmd.GetEndPoint(keystone.Nova)
+	novaURL, err := util.GetEndPoint(keystone.Nova)
 	if err != nil {
 		return err
 	}

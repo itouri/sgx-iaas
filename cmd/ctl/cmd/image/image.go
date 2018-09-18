@@ -1,17 +1,12 @@
 package image
 
 import (
-	"github.com/itouri/sgx-iaas/cmd/ctl/cmd"
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	cmd.RootCmd.AddCommand(newImageCmd())
-}
-
-func newImageCmd() *cobra.Command {
+func NewImageCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "Image",
+		Use:   "image",
 		Short: "Control Image resources",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()

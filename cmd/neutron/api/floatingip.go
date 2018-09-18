@@ -5,7 +5,7 @@ import (
 	// "github.com/itouri/sgx-iaas/pkg/domain/neutron"
 )
 
-func GetAllFloatingIPs(c domain.Context) error {
+func GetAllFloatingIPs(c echo.Context) error {
 	endpointID := c.Param("endpoint_id")
 
 	// json
@@ -13,7 +13,7 @@ func GetAllFloatingIPs(c domain.Context) error {
 	return nil
 }
 
-func GetFloatingIP(c domain.Context) error {
+func GetFloatingIP(c echo.Context) error {
 	endpointID := c.Param("endpoint_id")
 
 	// Endpointの参照先のurlを返せばいいのかな
@@ -21,7 +21,7 @@ func GetFloatingIP(c domain.Context) error {
 	return nil
 }
 
-func PostFloatingIP(c domain.Context) error {
+func PostFloatingIP(c echo.Context) error {
 	endpointID := c.Param("endpoint_id")
 
 	// Endpointの参照先のurlを返せばいいのかな
@@ -29,7 +29,7 @@ func PostFloatingIP(c domain.Context) error {
 	return nil
 }
 
-func PutFloatingIP(c domain.Context) error {
+func PutFloatingIP(c echo.Context) error {
 	endpointID := c.Param("endpoint_id")
 
 	// Endpointの参照先のurlを返せばいいのかな
@@ -37,7 +37,7 @@ func PutFloatingIP(c domain.Context) error {
 	return nil
 }
 
-func DeleteFloatingIP(c domain.Context) error {
+func DeleteFloatingIP(c echo.Context) error {
 	endpointID := c.Param("endpoint_id")
 
 	// Endpointの参照先のurlを返せばいいのかな

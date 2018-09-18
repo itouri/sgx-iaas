@@ -4,14 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/itouri/sgx-iaas/cmd/keystone/util"
-	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
-	"github.com/spf13/cobra"
-)
+	"github.com/itouri/sgx-iaas/cmd/ctl/cmd/image"
+	"github.com/itouri/sgx-iaas/cmd/ctl/cmd/templete"
+	"github.com/itouri/sgx-iaas/cmd/ctl/cmd/vm"
 
-var (
-	endpoints        map[keystone.EnumServiceType]string
-	keystoneEndpoint string
+	"github.com/spf13/cobra"
 )
 
 var RootCmd = &cobra.Command{
@@ -20,22 +17,15 @@ var RootCmd = &cobra.Command{
 	Long:  ``,
 }
 
+func init() {
+	RootCmd.AddCommand(image.NewImageCmd())
+	RootCmd.AddCommand(templete.NewTempleteCmd())
+	RootCmd.AddCommand(vm.NewVMCmd())
+}
+
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
 	}
-}
-
-func GetEndPoint(est keystone.EnumServiceType) (string, error) {
-	if endpoints == nil {
-		endpoints = map[keystone.EnumServiceType]string{}
-	}
-
-	if ep, ok := endpoints[est]; ok {
-		return ep, nil
-	}
-
-	// TODO clientの通信の部分を作り込む
-	return util.ResolveServiceEndpoint(keystoneEndpoint, est)
 }

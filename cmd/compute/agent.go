@@ -51,7 +51,6 @@ func publish(client *notify.RabbitNotifyClient) error {
 		ramUsage := float32(v.Available/v.Total) * 100
 
 		// TODO how to metering SGX ram usage?
-
 		tlmt := &ceilometer.Telemetry{
 			RAMUsage: ramUsage,
 		}

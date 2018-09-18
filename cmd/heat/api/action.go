@@ -15,7 +15,7 @@ type Req struct {
 	Template string `json:"template"`
 }
 
-func PostAction(c domain.Context) error {
+func PostAction(c echo.Context) error {
 	actionID := c.Param("action_id")
 	alarm := interactor.FindByAlarmID(actionID)
 

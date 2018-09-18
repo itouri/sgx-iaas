@@ -15,7 +15,7 @@ type ServiceInteractor struct {
 
 func (i *ServiceInteractor) FindAll() (*[]keystone.Service, error) {
 	res := new([]keystone.Service)
-	err := i.MongoHandler.FindAll(i.Collection, res)
+	err := i.MongoHandler.FindAll(i.Collection, "", res)
 	if err != nil {
 		return nil, fmt.Errorf("ServiceInteractor:FindAll() " + err.Error())
 	}
@@ -45,6 +45,12 @@ func (i *ServiceInteractor) FindByServiceID(serviceID string) (*keystone.Service
 
 func (i *ServiceInteractor) InsertService(service keystone.Service) error {
 	return i.MongoHandler.Insert(i.Collection, service)
+}
+
+func (i *ServiceInteractor) UpsertService(service keystone.Service) error {
+	query := bson.M{"type": service.Type}
+	upsert := bson.M{"$set": bson.M{"port": service.Port, "ip_addr": service.IPAddr}}
+	return i.MongoHandler.Upsert(i.Collection, query, upsert)
 }
 
 func (i *ServiceInteractor) DeleteService(serviceID string) error {

@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/spacemonkeygo/openssl"
-	"github.com/itouri/sgx-iaas/cmd/ctl/cmd/image/crypto"
 	"github.com/itouri/sgx-iaas/cmd/ctl/cmd"
 	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 	"github.com/spf13/cobra"
@@ -24,13 +23,13 @@ func init() {
 }
 
 func newCryptoCmd() *cobra.Command {
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:   "crypto <FilePath>",
 		Short: "crypto file with RA server public key",
 		RunE:  runCryptoCmd,
 	}
 
-	return cmd
+	return command
 }
 
 func runCryptoCmd(command *cobra.Command, args []string) error {
@@ -47,6 +46,7 @@ func runCryptoCmd(command *cobra.Command, args []string) error {
 	}
 
 	// TODO encrypt
+	// めんどくさいから各自コマンドツールでやってほしいよ，，，，
 
 	// err := encrypt()
 	// if err := nil {
@@ -62,7 +62,7 @@ func isFileExist(filename string) bool {
 }
 
 func getKey() error {
-	raURL, err := cmd.GetEndPoint(keystone.RA)
+	raURL, err := util.GetEndPoint(keystone.RA)
 	if err != nil {
 		return err
 	}

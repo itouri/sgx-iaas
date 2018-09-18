@@ -6,19 +6,19 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/itouri/sgx-iaas/cmd/ctl/cmd"
+	"github.com/itouri/sgx-iaas/cmd/keystone/util"
 	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 	"github.com/spf13/cobra"
 )
 
 func newRegisterCmd() *cobra.Command {
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:   "register <FilePath>",
 		Short: "register stack",
 		RunE:  runRegisterCmd,
 	}
 
-	return cmd
+	return command
 }
 
 func runRegisterCmd(command *cobra.Command, args []string) error {
@@ -26,7 +26,7 @@ func runRegisterCmd(command *cobra.Command, args []string) error {
 		log.Fatalf("Please provide a File Path.")
 	}
 
-	heatURL, err := cmd.GetEndPoint(keystone.Heat)
+	heatURL, err := util.GetEndPoint(keystone.Heat)
 	if err != nil {
 		return err
 	}

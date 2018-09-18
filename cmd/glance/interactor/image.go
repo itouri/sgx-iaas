@@ -1,6 +1,7 @@
 package interactor
 
 import (
+	"fmt"
 	"io"
 	"os"
 
@@ -48,4 +49,14 @@ func (ii *ImageInteractor) StoreFile(file *multipart.FileHeader) (*uuid.UUID, er
 	}
 
 	return &id, nil
+}
+
+// TODO 怖い
+func (ii *ImageInteractor) DeleteFile(imageID string) error {
+	err := os.Remove("/home/image/" + imageID)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
 }

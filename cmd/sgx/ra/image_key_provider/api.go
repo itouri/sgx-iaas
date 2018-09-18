@@ -33,6 +33,6 @@ func init() {
 	}
 }
 
-func GetImageCryptoKey(c domain.Context) error {
+func GetImageCryptoKey(c echo.Context) error {
 	return c.String(http.StatusOK, imageCryptoKey)
 }

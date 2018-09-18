@@ -20,11 +20,11 @@ type Req struct {
 	Template string `json:"template"`
 }
 
-func GetStacks(c domain.Context) error {
+func GetStacks(c echo.Context) error {
 
 }
 
-func PostStack(c domain.Context) error {
+func PostStack(c echo.Context) error {
 	req := &Req{}
 
 	err := c.Bind(req)

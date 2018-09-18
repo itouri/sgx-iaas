@@ -5,7 +5,7 @@ import (
 	// "github.com/itouri/sgx-iaas/pkg/domain/neutron"
 )
 
-func GetAllNetworks(c domain.Context) error {
+func GetAllNetworks(c echo.Context) error {
 	endpointID := c.Param("endpoint_id")
 
 	// Endpointの参照先のurlを返せばいいのかな
@@ -13,7 +13,7 @@ func GetAllNetworks(c domain.Context) error {
 	return nil
 }
 
-func GetNetwork(c domain.Context) error {
+func GetNetwork(c echo.Context) error {
 	endpointID := c.Param("endpoint_id")
 
 	// Endpointの参照先のurlを返せばいいのかな
@@ -21,7 +21,7 @@ func GetNetwork(c domain.Context) error {
 	return nil
 }
 
-func PostNetwork(c domain.Context) error {
+func PostNetwork(c echo.Context) error {
 	endpointID := c.Param("endpoint_id")
 
 	// Endpointの参照先のurlを返せばいいのかな
@@ -29,7 +29,7 @@ func PostNetwork(c domain.Context) error {
 	return nil
 }
 
-func PutNetwork(c domain.Context) error {
+func PutNetwork(c echo.Context) error {
 	endpointID := c.Param("endpoint_id")
 
 	// Endpointの参照先のurlを返せばいいのかな
@@ -37,7 +37,7 @@ func PutNetwork(c domain.Context) error {
 	return nil
 }
 
-func DeleteNetwork(c domain.Context) error {
+func DeleteNetwork(c echo.Context) error {
 	endpointID := c.Param("endpoint_id")
 
 	// Endpointの参照先のurlを返せばいいのかな

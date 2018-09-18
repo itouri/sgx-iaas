@@ -11,6 +11,29 @@ import (
 	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 )
 
+var (
+	endpoints        map[keystone.EnumServiceType]string
+	keystoneEndpoint string
+)
+
+func GetEndPoint(est keystone.EnumServiceType) (string, error) {
+	if endpoints == nil {
+		endpoints = map[keystone.EnumServiceType]string{}
+	}
+
+	if ep, ok := endpoints[est]; ok {
+		return ep, nil
+	}
+
+	// TODO clientの通信の部分を作り込む
+	return ResolveServiceEndpoint(keystoneEndpoint, est)
+}
+
+// TODO 非ハードコーディング
+func GetEndpointURL() string {
+	return "192.168.0.2:1323"
+}
+
 func ResolveServiceEndpoint(endpointURL string, st keystone.EnumServiceType) (string, error) {
 	// heatに情報を送るためにはendpointからIPを解決する必要がある
 	resp, err := http.Get(endpointURL + "/services/resolve/" + st.String())

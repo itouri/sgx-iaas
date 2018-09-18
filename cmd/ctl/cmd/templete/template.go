@@ -4,13 +4,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	cmd.RootCmd.AddCommand(newTempleteCmd())
-}
-
-func newTempleteCmd() *cobra.Command {
+func NewTempleteCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "Templete",
+		Use:   "templete",
 		Short: "Control Templete resources",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()

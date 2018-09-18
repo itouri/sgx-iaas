@@ -1,18 +1,12 @@
 package vm
 
 import (
-	"github.com/itouri/sgx-iaas/cmd/ctl/cmd"
-
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	cmd.RootCmd.AddCommand(newVMCmd())
-}
-
-func newVMCmd() *cobra.Command {
+func NewVMCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "VM",
+		Use:   "vm",
 		Short: "Control VM resources",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
