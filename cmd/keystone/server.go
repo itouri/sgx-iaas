@@ -1,4 +1,4 @@
-package keystone
+package main
 
 import (
 	"github.com/itouri/sgx-iaas/cmd/keystone/api"
@@ -21,11 +21,12 @@ func main() {
 	// e.DELETE("/v1/endpoints/:endpoint_id", api.DeleteEndPoint)
 
 	// services
-	e.GET("/v1/services", api.GetAllServices)
+	//e.GET("/v1/services", api.GetAllServices)
+	e.GET("/v1/services/resolve/:service_type", api.GetServiceResolve)
 	e.POST("/v1/services", api.PostService)
 
-	e.GET("/v1/services/:service_id", api.GetService)
-	e.PATCH("/v1/services/:service_id", api.PatchService)
+	//e.GET("/v1/services/:service_id", api.GetService)
+	//e.PATCH("/v1/services/:service_id", api.PatchService)
 	e.DELETE("/v1/services/:service_id", api.DeleteService)
 
 	e.Start(":1323")

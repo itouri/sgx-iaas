@@ -1,7 +1,10 @@
 package image
 
 import (
+	"bytes"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -22,6 +25,7 @@ func newRegisterCmd() *cobra.Command {
 	return command
 }
 
+// copy from https://astaxie.gitbooks.io/build-web-application-with-golang/ja/04.5.html
 func runRegisterCmd(command *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		log.Fatalf("Please provide a File Path.")
@@ -29,34 +33,50 @@ func runRegisterCmd(command *cobra.Command, args []string) error {
 
 	glanceURL, err := util.GetEndPoint(keystone.Glance)
 	if err != nil {
+		return fmt.Errorf("GetEndPoint: " + err.Error())
+	}
+
+	filename := args[0]
+
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+
+	//キーとなる操作
+	fileWriter, err := bodyWriter.CreateFormFile("image", filename)
+	if err != nil {
+		fmt.Println("error writing to buffer")
 		return err
 	}
 
-	file, err := os.Open(args[0])
+	//ファイルハンドル操作をオープンする
+	fh, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("error opening file")
+		return err
+	}
+	defer fh.Close()
+
+	//iocopy
+	_, err = io.Copy(fileWriter, fh)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
-	w := multipart.NewWriter(&buf)
+	contentType := bodyWriter.FormDataContentType()
+	bodyWriter.Close()
 
-	fw, err := w.CreateFormFile("file", file)
+	resp, err := http.Post(glanceURL+"/v1/images", contentType, bodyBuf)
+	if err != nil {
+		fmt.Println("Posting feiled: URL:" + glanceURL + "/images")
+		return err
+	}
+	defer resp.Body.Close()
+	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-	if _, err = io.Copy(fw, file); err != nil {
-		return err
-	}
-	w.Close()
 
-	req, err := http.NewRequest(http.MethodPost, uri, &buf)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", w.FormDataContentType())
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
+	fmt.Println(resp.Status)
+	fmt.Println(string(resp_body))
+	return nil
 }

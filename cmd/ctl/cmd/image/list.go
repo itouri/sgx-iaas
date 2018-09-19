@@ -15,5 +15,5 @@ func newListCmd() *cobra.Command {
 }
 
 func runListCmd(command *cobra.Command, args []string) error {
-
+	return nil
 }

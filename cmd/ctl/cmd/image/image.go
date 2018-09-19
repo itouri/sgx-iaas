@@ -5,20 +5,20 @@ import (
 )
 
 func NewImageCmd() *cobra.Command {
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:   "image",
 		Short: "Control Image resources",
-		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
+		Run: func(command *cobra.Command, args []string) {
+			command.Help()
 		},
 	}
 
-	cmd.AddCommand(
-		newCryptoCmd(),
+	command.AddCommand(
+		//newCryptoCmd(),
 		newDeleteCmd(),
 		newListCmd(),
 		newRegisterCmd(),
 	)
 
-	return cmd
+	return command
 }

@@ -9,8 +9,20 @@ import (
 )
 
 type ServiceInteractor struct {
-	mongo.MongoHandler
+	*mongo.MongoHandler
 	Collection string
+}
+
+var serviceInteractor *ServiceInteractor
+
+func NewServiceInteractor() *ServiceInteractor {
+	if serviceInteractor == nil {
+		serviceInteractor = &ServiceInteractor{
+			MongoHandler: mongoHandler,
+			Collection:   "service",
+		}
+	}
+	return serviceInteractor
 }
 
 func (i *ServiceInteractor) FindAll() (*[]keystone.Service, error) {
@@ -49,7 +61,7 @@ func (i *ServiceInteractor) InsertService(service keystone.Service) error {
 
 func (i *ServiceInteractor) UpsertService(service keystone.Service) error {
 	query := bson.M{"type": service.Type}
-	upsert := bson.M{"$set": bson.M{"port": service.Port, "ip_addr": service.IPAddr}}
+	upsert := bson.M{"$set": bson.M{"port": service.Port, "ipaddr": service.IPAddr}}
 	return i.MongoHandler.Upsert(i.Collection, query, upsert)
 }
 

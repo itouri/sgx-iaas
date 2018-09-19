@@ -12,18 +12,17 @@ var imageInteractor *interactor.ImageInteractor
 
 func init() {
 	imageInteractor = &interactor.ImageInteractor{
-		Path: "/home/image/",
+		Path: "./image/",
 	}
 }
 
 // e.File("/image/", "/home/image/")が代用
-// func GetImage(c echo.Context) error {
-// 	imageID := c.Param("image_id")
+func GetImage(c echo.Context) error {
+	imageID := c.Param("image_id")
 
-// 	// imageの参照先のurlを返せばいいのかな
-
-// 	return nil
-// }
+	// imageの参照先のurlを返せばいいのかな
+	return c.File(imageInteractor.Path + "/" + imageID)
+}
 
 // func GetAllImages(c echo.Context) error {
 // 	req := &Req{}
@@ -31,16 +30,15 @@ func init() {
 // }
 
 func PostImage(c echo.Context) error {
-
 	file, err := c.FormFile("image")
 	if err != nil {
-		fmt.Printf(err.Error())
+		fmt.Println(err.Error())
 		return err
 	}
 
 	id, err := imageInteractor.StoreFile(file)
 	if err != nil {
-		fmt.Printf(err.Error())
+		fmt.Println("Error StoreFile:" + err.Error())
 		return err
 	}
 
@@ -52,7 +50,11 @@ func DeleteImage(c echo.Context) error {
 	if imageID == "" {
 		return c.String(http.StatusBadRequest, "image_id is not included")
 	}
-	imageInteractor.DeleteFile(imageID)
+
+	err := imageInteractor.DeleteFile(imageID)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
 
 	return nil
 }
