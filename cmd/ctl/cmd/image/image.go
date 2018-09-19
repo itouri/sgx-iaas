@@ -14,7 +14,7 @@ func NewImageCmd() *cobra.Command {
 	}
 
 	command.AddCommand(
-		//newCryptoCmd(),
+		newCryptoCmd(),
 		newDeleteCmd(),
 		newListCmd(),
 		newRegisterCmd(),

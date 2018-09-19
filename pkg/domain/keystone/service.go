@@ -18,6 +18,7 @@ const (
 	Nova
 	Heat
 	RA
+	RAKey
 )
 
 type Service struct {
@@ -40,6 +41,7 @@ var serviceID = map[EnumServiceType]string{
 	Nova:       "Nova",
 	Heat:       "Heat",
 	RA:         "RA",
+	RAKey:      "RAKey",
 }
 
 var serviceName = map[string]EnumServiceType{
@@ -50,6 +52,7 @@ var serviceName = map[string]EnumServiceType{
 	"Nova":       Nova,
 	"Heat":       Heat,
 	"RA":         RA,
+	"RAKey":      RAKey,
 }
 
 // TODO もっといい方法がある

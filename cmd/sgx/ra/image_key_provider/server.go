@@ -1,7 +1,10 @@
-package image_key_provider
+package main
 
 import (
-	"github.com/itouri/sgx-iaas/cmd/ceilometer/api"
+	"fmt"
+
+	"github.com/itouri/sgx-iaas/cmd/keystone/util"
+	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
@@ -12,7 +15,13 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.GET("/ra/image_crypto_key", api.GetImageCryptoKey())
+	err := util.RegisterEndpoint(keystone.RAKey, "localhost", 22222)
+	if err != nil {
+		fmt.Println("Error RegisterEndpoint: " + err.Error())
+		return
+	}
 
-	e.Start(":1323")
+	e.GET("/ra/image_crypto_key", GetImageCryptoKey)
+
+	e.Start(":22222")
 }

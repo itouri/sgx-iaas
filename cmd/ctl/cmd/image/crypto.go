@@ -1,14 +1,13 @@
 package image
 
 import (
-	"io"
 	"fmt"
-	"io/ioutil"
-	"log"
+	"io"
 	"net/http"
+	"os"
 
-	"github.com/spacemonkeygo/openssl"
-	"github.com/itouri/sgx-iaas/cmd/ctl/cmd"
+	//"github.com/spacemonkeygo/openssl"
+	"github.com/itouri/sgx-iaas/cmd/keystone/util"
 	"github.com/itouri/sgx-iaas/pkg/domain/keystone"
 	"github.com/spf13/cobra"
 )
@@ -19,7 +18,7 @@ var (
 
 func init() {
 	// TODO reading from configure file
-	storePubKeyPath = "/etc/sgxiaas/"
+	storePubKeyPath = "./pubkey.pem"
 }
 
 func newCryptoCmd() *cobra.Command {
@@ -33,10 +32,10 @@ func newCryptoCmd() *cobra.Command {
 }
 
 func runCryptoCmd(command *cobra.Command, args []string) error {
-	if len(args) != 1 {
-		log.Fatalf("Please provide a file path.")
-	}
-	cryptoFilePath := args[0]
+	// if len(args) != 1 {
+	// 	log.Fatalf("Please provide a crypted file path.")
+	// }
+	// cryptoFilePath := args[0]
 
 	if !isFileExist(storePubKeyPath) {
 		err := getKey()
@@ -57,18 +56,18 @@ func runCryptoCmd(command *cobra.Command, args []string) error {
 }
 
 func isFileExist(filename string) bool {
-    _, err := os.Stat(filename)
-    return err == nil
+	_, err := os.Stat(filename)
+	return err == nil
 }
 
 func getKey() error {
-	raURL, err := util.GetEndPoint(keystone.RA)
+	raURL, err := util.GetEndPoint(keystone.RAKey)
 	if err != nil {
 		return err
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", raURL, nil)
+	req, err := http.NewRequest("GET", raURL+"/ra/image_crypto_key", nil)
 	if err != nil {
 		return err
 	}
@@ -82,13 +81,13 @@ func getKey() error {
 
 	// store key
 	file, err := os.Create(storePubKeyPath)
-	if err := nil {
+	if err != nil {
 		return err
 	}
 	defer file.Close()
 
 	io.Copy(file, resp.Body)
-	if err := nil {
+	if err != nil {
 		return err
 	}
 
