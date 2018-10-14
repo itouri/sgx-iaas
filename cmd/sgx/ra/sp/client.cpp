@@ -1160,7 +1160,7 @@ int file_in_searchpath (const char *file, const char *search, char *fullpath,
 
 #endif
 
-sgx_status_t run_graphene_vm_ocall(sgx_enclave_id_t *graphene_eid, uuid image_id)
+int run_graphene_vm_ocall(sgx_enclave_id_t *graphene_eid, uuid_t image_id)
 {
 	// sh の起動だと思う how to get enclave id?
 }

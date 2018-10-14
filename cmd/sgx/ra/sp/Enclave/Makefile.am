@@ -62,7 +62,7 @@ ENCLAVE_KEY=$(ENCLAVE)_private.pem
 ## AM_CPPFLAGS += 
 ## AM_CXXFLAGS +=
 
-AM_CPPFLAGS += -I..
+AM_CPPFLAGS += -I.. -I/usr/include/ -I/opt/openssl/1.1.0i/include/ -luuid 
 
 ## Additional files to remove with 'make clean'. This list needs
 ## to include your edger8r genreated files.
