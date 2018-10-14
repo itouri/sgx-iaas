@@ -1,3 +1,7 @@
 vendor
 pkg/db/mysql/sqlhandler.go
-ra
+sdk
+psw
+common
+m4
+builid-aux
