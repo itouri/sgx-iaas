@@ -1,4 +1,4 @@
-#include "Enclave_t.h"
+#include "e_fileio.h"
 
 // RSAへのsend
 int send_to_ras(void *src, size_t sz) {

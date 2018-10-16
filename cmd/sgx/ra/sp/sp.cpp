@@ -53,8 +53,9 @@ in the License.
 #include "settings.h"
 
 // 追加
-#include "libcrypto.h"
+#include "crypto.h"
 #include "message.h"
+#include <sgx_trts.h>
 
 using namespace json;
 using namespace std;
@@ -102,8 +103,8 @@ typedef struct config_struct {
 	int strict_trust;
 	// 追加
 	//EVP_PKEY *image_meta_key;
-	//TODO 鍵が文字列なのは良くない
-	unsigned char image_metadata_key[16];
+	//TODO 鍵が文字列なのは良くない RSA鍵じゃないと行けないからこれは間違ってる
+	EVP_PKEY *request_decrypto_key;
 } config_t;
 
 void usage();
@@ -351,7 +352,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'i':
 			// imageメタデータの復号鍵を読み込む
-			if (!key_load_file(&config.image_meta_key, optarg, KEY_PRIVATE)) {
+			if (!key_load(&config.request_decrypto_key, optarg, KEY_PRIVATE)) {
 				crypto_perror("key_load_file");
 				eprintf("%s: could not load image_meta EC private key\n", optarg);
 				return 1;
@@ -365,7 +366,7 @@ int main(int argc, char *argv[])
 	}
 
 	//TODO 鍵が文字列なのは良くない
-	config.image_metadata_key = "abxsabxsabxsabxs";
+	// config.request_decrypto_key = (unsigned char*)"abxsabxsabxsabx";
 
 	/* We should have zero or one command-line argument remaining */
 
@@ -567,7 +568,9 @@ int main(int argc, char *argv[])
 		sgx_ra_msg1_t msg1;
 		sgx_ra_msg2_t msg2;
 		ra_msg4_t msg4;
+		// skは const sgx_aes_gcm_128bit_key_tと同じ
 		unsigned char smk[16], sk[16], mk[16];
+
 
 		/* Read message 0 and 1, then generate message 2 */
 
@@ -787,7 +790,7 @@ int process_msg3 (MsgIO *msgio, IAS_Connection *ias, sgx_ra_msg1_t *msg1,
 		}
 
 		//Task MRENCLAVE が master enclave のものか検証
-		if ( memcmp(&r->mr_enclave, &ME_MRENCLAVE, sizeof(sgx_measurement_t) != 0 ) {
+		if ( memcmp(&r->mr_enclave, &ME_MRENCLAVE, sizeof(sgx_measurement_t) != 0 ) ) {
 			//TODO eprintf使ったほうがいい？
 			printf("dont mutch reported mrenclave and Master Enclave mrenclave\n");
 		}
@@ -824,40 +827,48 @@ int process_msg3 (MsgIO *msgio, IAS_Connection *ias, sgx_ra_msg1_t *msg1,
 			sha256_digest(sk, 16, hashsk);
 
 			uint8_t aes_gcm_iv[12] = {0}; 
+			// TODO sizeの指定
+			uint8_t crypted_msg[128] = {0};
+
 			uint8_t mac[16];
-			uint8_t crypted_msg[];
+
+			const sgx_aes_gcm_128bit_key_t *sk_key;
+			memcpy((void *)sk_key, (const void*)sk, sizeof(sgx_aes_gcm_128bit_key_t));
 
 			// Task image_meta復号鍵を RA した共通鍵で暗号化
+			sgx_status_t ret;
 			ret = sgx_rijndael128GCM_encrypt(
-				sk,
-				config.image_metadata_key,
-				sizeof(config.image_metadata_key), //sizeof(EVP_PKEY),
+				sk_key,
+				(const uint8_t*)&config->request_decrypto_key,
+				sizeof(config->request_decrypto_key), //sizeof(EVP_PKEY),
 				crypted_msg,
 				&aes_gcm_iv[0],
 				12,
 				NULL,
 				0,
-				mac
-			);			
+				&mac
+			);
 			//TODO エラーハンドリング
 			//if ( ret != ) {}
 
 			/*Task enclaveへrequest復号鍵を送信 */
 			msgio->send(crypted_msg, sizeof(crypted_msg));
 
+			uuid_t client_id;
+
 			/*Task client idを受けとる */
 			ra_req_data_t *ra_req_data;
-			msgio->read(crypted_msg, sizeof(crypted_msg));
+			msgio->read((void **)&crypted_msg, &sz);
 			ret = sgx_rijndael128GCM_decrypt(
-				&sk,
-				ra_req_data,
+				sk_key,
+				(const uint8_t*)ra_req_data,
 				sizeof(ra_req_data),
 				client_id,
 				&aes_gcm_iv[0],
 				12,
 				NULL,
 				0,
-				mac //TODO このmacって検証しなくていいの？関数がしてくれないの？
+				&mac //TODO このmacって検証しなくていいの？関数がしてくれないの？
 			);
 
 			// golangにお願いする
@@ -866,34 +877,34 @@ int process_msg3 (MsgIO *msgio, IAS_Connection *ias, sgx_ra_msg1_t *msg1,
 
 			/*Task master enclave へ正しい mrenclave を送信する*/
 			ret = sgx_rijndael128GCM_encrypt(
-				sk,
-				vm_mrenclave,
+				sk_key,
+				(const uint8_t*)vm_mrenclave,
 				sizeof(vm_mrenclave), //sizeof(EVP_PKEY),
 				crypted_msg,
 				&aes_gcm_iv[0],
 				12,
 				NULL,
 				0,
-				mac
+				&mac
 			);
 			msgio->send(crypted_msg, sizeof(crypted_msg));
 
 			/*Task master enclave からの完了報告を待つ*/
-			msgio->read(crypted_msg, sizeof(crypted_msg));
+			msgio->read((void**)&crypted_msg, &sz);
 			msg_cmpt_t *msg;
 			ret = sgx_rijndael128GCM_decrypt(
-				&sk,
-				crypted_msg,
+				sk_key,
+				(const uint8_t*)crypted_msg,
 				sizeof(crypted_msg),
-				msg,
+				(uint8_t*)msg,
 				&aes_gcm_iv[0],
 				12,
 				NULL,
 				0,
-				mac //TODO このmacって検証しなくていいの？関数がしてくれないの？
+				&mac //TODO このmacって検証しなくていいの？関数がしてくれないの？
 			);
 
-			printf("complete launch vm! image_id:%s, cliend_id:%s",msg->image_id, msg->cliend_id);
+			printf("complete launch vm! image_id:%s, cliend_id:%s",msg->image_id, msg->client_id);
 
 			if ( verbose ) {
 				eprintf("MK         = %s\n", hexstring(mk, 16));

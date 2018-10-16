@@ -66,6 +66,8 @@ using namespace std;
 #include "logfile.h"
 #include "quote_size.h"
 
+#include "client.h"
+
 #define MAX_LEN 80
 
 #ifdef _WIN32
@@ -132,6 +134,11 @@ char verbose= 0;
 #endif
 
 #define IMAGE_PATH "./img/"
+
+int get_mrenclave(sgx_enclave_id_t target_eid, config_t *config)
+{
+
+}
 
 int main (int argc, char *argv[])
 {
@@ -428,11 +435,6 @@ int main (int argc, char *argv[])
 
      
 	close_logfile(fplog);
-}
-
-int get_mrenclave(sgx_enclave_id_t own_eid, sgx_enclave_id_t target_eid, config_t *config)
-{
-
 }
 
 // 他の関数で使う必要があるので global
@@ -1160,40 +1162,6 @@ int file_in_searchpath (const char *file, const char *search, char *fullpath,
 
 #endif
 
-int run_graphene_vm_ocall(sgx_enclave_id_t *graphene_eid, uuid_t image_id)
-{
-	// sh の起動だと思う how to get enclave id?
-}
-
-int send_to_ras_ocall(void *src, size_t sz)
-{
-	msgio->send(src, sz);
-	divider(stderr); //TODO なんだろうこれ
-}
-
-// RSAからのreceive
-int recv_from_ras_ocall(void **dest, size_t *sz) {
-	rv = msgio->read((void **)dest, sz)
-	if ( rv == 0 ) {
-        //enclave_ra_close(eid, &sgxrv, ra_ctx);
-		fprintf(stderr, "protocol error recv_from_ras_ocall()\n");
-		exit(1);
-	} else if ( rv == -1 ) {
-        //enclave_ra_close(eid, &sgxrv, ra_ctx);
-		fprintf(stderr, "system error occurred while recv_from_ras_ocall()\n");
-		exit(1);
-	}
-}
-
-// localfileのread
-int read_file_ocall(unsigned char *dest, char *file, off_t *len) {
-	if ( !from_file(dest, file ,len) ) {
-		// error
-		fprintf(stderr, "failed read_file_ocall()\n");
-		return 1;
-	}
-}
-
 // サンプルで使うオプションは -P -S -r かな
 void usage () 
 {
@@ -1225,3 +1193,37 @@ void usage ()
 	exit(1);
 }
 
+int run_graphene_vm_ocall(sgx_enclave_id_t *graphene_eid, uuid_t *image_id)
+{
+	// sh の起動だと思う how to get enclave id?
+}
+
+int send_to_ras_ocall(char *src, size_t sz)
+{
+	msgio->send((void *)src, sz);
+	divider(stderr); //TODO なんだろうこれ
+}
+
+// RSAからのreceive
+int recv_from_ras_ocall(char **dest, size_t *sz) {
+	int ret_val;
+	ret_val = msgio->read((void **)dest, sz);
+	if ( ret_val == 0 ) {
+        //enclave_ra_close(eid, &sgxrv, ra_ctx);
+		fprintf(stderr, "protocol error recv_from_ras_ocall()\n");
+		exit(1);
+	} else if ( ret_val == -1 ) {
+        //enclave_ra_close(eid, &sgxrv, ra_ctx);
+		fprintf(stderr, "system error occurred while recv_from_ras_ocall()\n");
+		exit(1);
+	}
+}
+
+// localfileのread
+int read_file_ocall(unsigned char *dest, char *file, off_t *len) {
+	if ( !from_file(dest, file ,len) ) {
+		// error
+		fprintf(stderr, "failed read_file_ocall()\n");
+		return 1;
+	}
+}

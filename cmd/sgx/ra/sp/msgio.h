@@ -28,7 +28,7 @@ in the License.
 #ifdef _WIN32
 #include <WS2tcpip.h>
 #endif
-#include <string>
+#include <string.h>
 using namespace std;
 
 #define STRUCT_INCLUDES_PSIZE	0
