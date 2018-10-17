@@ -299,6 +299,8 @@ sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t *image_id, sg
 		mac //TODO このmacって検証しなくていいの？関数がしてくれないの？
 	);
 
+	
+
 	const char iv = {0}; // 16Byte
 	unsigned char *vrfymac;
 	// cry_client_id を復号 -> cry_req_data を復号
