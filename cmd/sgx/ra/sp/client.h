@@ -1,6 +1,8 @@
 #ifndef __CLIENT_H
 #define __CLIENT_H
 
+#include <sgx_utils.h>
+#include <stdio.h>
 #include "uuid/uuid.h"
 
 int run_graphene_vm_ocall(sgx_enclave_id_t *graphene_eid, uuid_t image_id);

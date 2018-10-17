@@ -272,8 +272,8 @@ sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t *image_id, sg
 	int retval;
 	// MRSINGERはいらないかな
 	//Task image復号化鍵を受け取る
-	unsigned char *cry_msg;
-	//TODO recv_from_ras(&retval, cry_msg, (size_t*)sizeof(cry_msg));
+	char cry_msg[512];
+	recv_from_ras((char **)cry_msg, (size_t*)sizeof(cry_msg));
 
 	// ra共通鍵でimage復号鍵を復号化
 	uint8_t aes_gcm_iv[12] = {0};
@@ -282,7 +282,7 @@ sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t *image_id, sg
 	sgx_aes_gcm_128bit_tag_t mac[16];
 	ret = sgx_rijndael128GCM_decrypt(
 		&ra_key,
-		cry_msg,
+		(const uint8_t*)cry_msg,
 		sizeof(imd_key),
 		imd_key,
 		&aes_gcm_iv[0],
@@ -316,11 +316,11 @@ sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t *image_id, sg
 
 	// grapheneSGX の mrenclave を RAS に問い合わせる
 	sgx_measurement_t *vm_mrenclave;
-	//TODO recv_from_ras(&retval, cry_msg, (size_t*)sizeof(cry_msg));
+	recv_from_ras((char**)cry_msg, (size_t*)sizeof(cry_msg));
 
 	ret = sgx_rijndael128GCM_decrypt(
 		&ra_key,
-		cry_msg,
+		(const uint8_t*)cry_msg,
 		sizeof(cry_msg), //TODO sizeが間違ってる
 		(uint8_t*)vm_mrenclave,
 		&aes_gcm_iv[0],
@@ -348,7 +348,7 @@ sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t *image_id, sg
 	memcpy(&msg_cmpt.image_id, &image_id, sizeof(uuid_t));
 	memcpy(&msg_cmpt.client_id, &req_data->client_id, sizeof(uuid_t));
 
-	uint8_t *crypted_msg;
+	uint8_t crypted_msg[512];
 	ret = sgx_rijndael128GCM_encrypt(
 		&ra_key,
 		(const uint8_t*)&msg_cmpt,
@@ -360,5 +360,5 @@ sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t *image_id, sg
 		0,
 		mac
 	);
-	//send_to_ras(&retval, crypted_msg, sizeof(crypted_msg));
+	send_to_ras((char*)crypted_msg, sizeof(crypted_msg));
 }
