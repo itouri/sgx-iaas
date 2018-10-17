@@ -1227,3 +1227,15 @@ int read_file_ocall(unsigned char *dest, char *file, off_t *len) {
 		return 1;
 	}
 }
+
+void print_ocall(char *str, size_t size) {
+    if (size != 0) {
+        int i;
+        for (i=0; i < size; i++) {
+            printf("%u ",(uint8_t)str[i]);
+        }
+        printf("\n");
+    } else {
+        printf("%s\n", str);
+    }
+}

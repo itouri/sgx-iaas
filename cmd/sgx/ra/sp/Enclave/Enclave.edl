@@ -57,6 +57,7 @@ enclave {
 		int recv_from_ras_ocall([in, out]char **dest, [in, out] size_t *sz);
 		int read_file_ocall([in, out]unsigned char *dest, [in, out]char *file, [in, out]off_t *len);
 		int run_graphene_vm_ocall([in, out]sgx_enclave_id_t *graphene_eid, [in, out]uuid_t *image_id);
+		void print_ocall([in, string]char *str, size_t size);
 	};
 };
 
