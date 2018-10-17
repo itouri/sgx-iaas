@@ -28,13 +28,69 @@ in the License.
 // 追加
 #include <sgx_report.h>
 #include <uuid/uuid.h>
-#include <openssl/evp.h>
+//#include <openssl/evp.h>
 #include "../message.h"
 
 #include "e_fileio.h"
 
 #define MAC_SIZE 16
 
+// https://blanktar.jp/blog/2014/10/c_language-aes-with-openssl.html
+unsigned char* decrypt(
+    const char* key,
+    const unsigned char* data,
+    const size_t datalen,
+    const unsigned char* iv,
+    unsigned char* dest,
+    const size_t destlen
+){
+	// EVP_CIPHER_CTX *de;
+    // // え？enclaveでなんで malloc できるん？
+    // de = (EVP_CIPHER_CTX *)malloc(sizeof(EVP_CIPHER_CTX));
+
+	// int f_len = 0;
+	// int p_len = datalen;
+
+	// memset(dest, 0x00, destlen);
+
+	// EVP_CIPHER_CTX_init(de);
+	// EVP_DecryptInit_ex(de, EVP_aes_128_cbc(), NULL, (unsigned char*)key, iv);
+
+	// EVP_DecryptUpdate(de, (unsigned char *)dest, &p_len, data, datalen);
+	// //EVP_DecryptFinal_ex(&de, (unsigned char *)(dest + p_len), &f_len);
+
+	// EVP_CIPHER_CTX_cleanup(de);
+
+	// return dest;
+}
+
+// MRENCLAVE を rsa 公開鍵で暗号化するために使う
+unsigned char* encrypt( const char* key,
+						const unsigned char* data,
+						const size_t datalen,
+						const unsigned char* iv,
+						unsigned char* dest,
+						const size_t destlen)
+{
+	// EVP_CIPHER_CTX *en;
+    // // やっぱmallocが必要だよね どうやら malloc をラップしているライブラリがあるみたい
+    // en = (EVP_CIPHER_CTX *)malloc(sizeof(EVP_CIPHER_CTX));
+    // EVP_CIPHER_CTX_init(en);
+
+	// int i, f_len=0;
+	// int c_len = destlen;
+
+	// memset(dest, 0x00, destlen);
+
+	// EVP_EncryptInit_ex(en, EVP_aes_128_cbc(), NULL, (unsigned char*)key, iv);
+
+	// EVP_EncryptUpdate(en, dest, &c_len, (unsigned char *)data, datalen);
+	// //EVP_EncryptFinal_ex(&en, (unsigned char *)(dest + c_len), &f_len);
+
+	// EVP_CIPHER_CTX_cleanup(en);
+
+	// return dest;
+}
 
 static const sgx_ec256_public_t def_service_public_key = {
     {
@@ -191,7 +247,7 @@ sgx_status_t enclave_ra_get_key_hash(sgx_status_t *get_keys_ret,
 
 	/* Now generate a SHA hash */
 
-	sha_ret= sgx_sha256_msg((const uint8_t *) &k, sizeof(k), 
+	sha_ret= sgx_sha256_msg((const uint8_t *) &ra_key, sizeof(ra_key), 
 		(sgx_sha256_hash_t *) hash); // Sigh.
 
 	/* Let's be thorough */
@@ -210,12 +266,14 @@ sgx_status_t enclave_ra_close(sgx_ra_context_t ctx)
 }
 
 // manifest復号鍵を基にmanifestを復号化してVMを起動する
-sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t image_id, sgx_ra_context_t ctx)
+sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t *image_id, sgx_ra_context_t *ctx)
 {
+	sgx_status_t ret;
+	int retval;
 	// MRSINGERはいらないかな
 	//Task image復号化鍵を受け取る
 	unsigned char *cry_msg;
-	recv_from_ras(cry_msg, sizeof(cry_msg));
+	//TODO recv_from_ras(&retval, cry_msg, (size_t*)sizeof(cry_msg));
 
 	// ra共通鍵でimage復号鍵を復号化
 	uint8_t aes_gcm_iv[12] = {0};
@@ -234,54 +292,37 @@ sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t image_id, sgx
 		mac //TODO このmacって検証しなくていいの？関数がしてくれないの？
 	);
 
-	// --- 仕様変更で image_meta_data を読み込む必要はなくなった！！！ ---
-	// // image metadata を読み込む
-	// //固定長にする必要がある
-	// unsigned char crypted_imd[32];
-	// char uuid[36+1];
-    // uuid_unparse(image_id, uuid);
-	// char* image_path = IMAGE_PATH + uuid;
-	// read_file(image_path, crypted_imd);
-
-	// // image復号鍵でimage_metadataを復号化
-	// // sgx_rijndael128GCM_decrypt ではダメ？
-	// unsigned char iv = {0}; // 16Byte
-	// image_metadata_t *image_metadata;
-	// decrypt(imd_key, crypted_imd, sizeof(crypted_imd), iv, image_metadata, sizeof(image_meta_data_t));
-
-	// //Task MRENCLAVE, clientIDに改ざんがないかMACで検証	
-	// //TODO １つめの鍵は何を指定しよう
-	// cmac128(imd_key, (unsigned char *) image_metadata,
-	// 	sizeof(image_metadata_t),
-	// 	(unsigned char *) vrfymac);
-	// if ( CRYPTO_memcmp(image_metadata.mac, vrfymac, sizeof(MAC_SIZE)) ) {
-	// 	eprintf("Failed to verify image_metadata MAC\n");
-	// 	return 0;
-	// }
-	// --- 仕様変更で image_meta_data を読み込む必要はなくなった！！！ ---
-
+	const char iv = {0}; // 16Byte
+	unsigned char *vrfymac;
 	// cry_client_id を復号 -> cry_req_data を復号
 	req_data_t *req_data;
-	decrypt(imd_key, req_data, sizeof(req_data), iv, req_data, sizeof(req_data_t));
+	decrypt((const char*)imd_key, (const unsigned char*)req_data, sizeof(req_data), iv, (unsigned char*)req_data, sizeof(req_data_t));
 
-	// macを検証
-	cmac128(imd_key, (unsigned char *) req_data,
-		sizeof(req_data_t),
-		(unsigned char *) vrfymac);
-	if ( CRYPTO_memcmp(req_data.mac, vrfymac, sizeof(MAC_SIZE)) ) {
-		eprintf("Failed to verify request data MAC\n");
-		return 0;
-	}
+	// TODO macを検証
+	// cmac128(imd_key, (unsigned char *) req_data,
+	// 	sizeof(req_data_t),
+	// 	(unsigned char *) vrfymac);
+	
+	// if ( CRYPTO_memcmp(req_data->mac, vrfymac, sizeof(MAC_SIZE)) ) {
+	// 	printe("Failed to verify request data MAC\n");
+	// 	return 0;
+	// }
+	// ret = sgx_rijndael128_cmac_msg(
+	// 	imd_key,
+	// 	(const uint8_t*) req_data,
+	// 	sizeof(req_data),
+	// 	p_mac
+	// );
 
 	// grapheneSGX の mrenclave を RAS に問い合わせる
-	sgx_measurement_t *vm_mrenclave
-	recv_from_ras(cry_msg, sizeof(cry_msg));
+	sgx_measurement_t *vm_mrenclave;
+	//TODO recv_from_ras(&retval, cry_msg, (size_t*)sizeof(cry_msg));
 
 	ret = sgx_rijndael128GCM_decrypt(
 		&ra_key,
 		cry_msg,
 		sizeof(cry_msg), //TODO sizeが間違ってる
-		vm_mrenclave,
+		(uint8_t*)vm_mrenclave,
 		&aes_gcm_iv[0],
 		12,
 		NULL,
@@ -291,21 +332,26 @@ sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t image_id, sgx
 
 	//Task 指定された graphene で image を起動
 	sgx_enclave_id_t graphene_eid; // graphene からの id を返却してもらう
-	ret = run_graphene_vm_ocall(&graphene_eid, image_id);
-	if (ret != 0) {
-		return;
-	}
+	//TODO (unsigned char (*)[16])大丈夫かなこのキャスト
+	run_graphene_vm_ocall(&retval, &graphene_eid, (unsigned char (*)[16])image_id);
+	// if (ret != 0) {
+	// 	return Error;
+	// }
 
 	//Task この enclave が まず通常の LA
 	// やること多いぞ
 
 	//Task OKなら imageID, clientID を RAS へ報告
 	// image_id, client_id がどちらもuuidにすれば固定長にできる筈
-	msg_cmpt_t msg_cmpt = {image_id, cliend_id};
-	uint8_t crypted_msg[];
+	// *image_idの * いる？
+	msg_cmpt_t msg_cmpt;
+	memcpy(&msg_cmpt.image_id, &image_id, sizeof(uuid_t));
+	memcpy(&msg_cmpt.client_id, &req_data->client_id, sizeof(uuid_t));
+
+	uint8_t *crypted_msg;
 	ret = sgx_rijndael128GCM_encrypt(
 		&ra_key,
-		msg_cmpt,
+		(const uint8_t*)&msg_cmpt,
 		sizeof(msg_cmpt_t),
 		crypted_msg,
 		&aes_gcm_iv[0],
@@ -314,64 +360,5 @@ sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t image_id, sgx
 		0,
 		mac
 	);
-	send_to_ras(crypted_msg, sizeof(sz));
+	//send_to_ras(&retval, crypted_msg, sizeof(crypted_msg));
 }
-
-
-// https://blanktar.jp/blog/2014/10/c_language-aes-with-openssl.html
-unsigned char* decrypt(
-    const char* key,
-    const unsigned char* data,
-    const size_t datalen,
-    const unsigned char* iv,
-    unsigned char* dest,
-    const size_t destlen
-){
-	EVP_CIPHER_CTX *de;
-    // え？enclaveでなんで malloc できるん？
-    de = (EVP_CIPHER_CTX *)malloc(sizeof(EVP_CIPHER_CTX));
-
-	int f_len = 0;
-	int p_len = datalen;
-
-	memset(dest, 0x00, destlen);
-
-	EVP_CIPHER_CTX_init(de);
-	EVP_DecryptInit_ex(de, EVP_aes_128_cbc(), NULL, (unsigned char*)key, iv);
-
-	EVP_DecryptUpdate(de, (unsigned char *)dest, &p_len, data, datalen);
-	//EVP_DecryptFinal_ex(&de, (unsigned char *)(dest + p_len), &f_len);
-
-	EVP_CIPHER_CTX_cleanup(de);
-
-	return dest;
-}
-
-// MRENCLAVE を rsa 公開鍵で暗号化するために使う
-unsigned char* encrypt( const char* key,
-						const unsigned char* data,
-						const size_t datalen,
-						const unsigned char* iv,
-						unsigned char* dest,
-						const size_t destlen)
-{
-	EVP_CIPHER_CTX *en;
-    // やっぱmallocが必要だよね どうやら malloc をラップしているライブラリがあるみたい
-    en = (EVP_CIPHER_CTX *)malloc(sizeof(EVP_CIPHER_CTX));
-    EVP_CIPHER_CTX_init(en);
-
-	int i, f_len=0;
-	int c_len = destlen;
-
-	memset(dest, 0x00, destlen);
-
-	EVP_EncryptInit_ex(en, EVP_aes_128_cbc(), NULL, (unsigned char*)key, iv);
-
-	EVP_EncryptUpdate(en, dest, &c_len, (unsigned char *)data, datalen);
-	//EVP_EncryptFinal_ex(&en, (unsigned char *)(dest + c_len), &f_len);
-
-	EVP_CIPHER_CTX_cleanup(en);
-
-	return dest;
-}
-

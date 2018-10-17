@@ -15,22 +15,15 @@ in the License.
 
 */
 
-#ifndef _WIN32
-#include "config.h"
-#endif
-
 enclave {
 	include "sgx_trts.h"
 	include "sgx_utils.h"
 	include "sgx_tkey_exchange.h"
+	include "uuid/uuid.h"
 
 	from "sgx_tkey_exchange.edl" import *;
 
 	trusted {
-#ifndef _WIN32
-		include "config.h"
-#endif
-
 		public sgx_status_t get_report([out] sgx_report_t *report,
 			[in] sgx_target_info_t *target_info);
 
@@ -49,16 +42,21 @@ enclave {
 			sgx_ra_key_type_t type, [out] sgx_sha256_hash_t *hash);
 
 		public sgx_status_t enclave_ra_close(sgx_ra_context_t ctx);
-		public sgx_status_t enclave_launch_vm(); //added
+		public sgx_status_t enclave_launch_vm(
+			[in]unsigned char *cry_req_data,
+			[in]uuid_t *image_id,
+			[in]sgx_ra_context_t *ctx
+		); //added
 
 		//TODO add e_fileio funcs
 
 	};
 
 	untrusted {
-#ifndef _WIN32
-		include "config.h"
-#endif
+		int send_to_ras_ocall([in, out]char *src, size_t sz);
+		int recv_from_ras_ocall([in, out]char **dest, [in, out] size_t *sz);
+		int read_file_ocall([in, out]unsigned char *dest, [in, out]char *file, [in, out]off_t *len);
+		int run_graphene_vm_ocall([in, out]sgx_enclave_id_t *graphene_eid, [in, out]uuid_t *image_id);
 	};
 };
 

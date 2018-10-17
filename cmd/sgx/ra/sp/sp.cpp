@@ -53,8 +53,9 @@ in the License.
 #include "settings.h"
 
 // 追加
-#include "libcrypto.h"
+#include "crypto.h"
 #include "message.h"
+#include <sgx_trts.h>
 
 using namespace json;
 using namespace std;
@@ -83,6 +84,192 @@ static const sgx_measurement_t ME_MRENCLAVE = {
 	0xad, 0x57, 0x34, 0x53, 0xd1, 0x03, 0x8c, 0x01
 };
 
+#ifdef __linux__
+/*
+ * __memset_vp is a volatile pointer to a function.
+ * It is initialised to point to memset, and should never be changed.
+ */
+static void * (* const volatile __memset_vp)(void *, int, size_t)
+    = (memset);
+
+#undef memset_s /* in case it was defined as a macro */
+
+extern "C" int memset_s(void *s, size_t smax, int c, size_t n)
+{
+    int err = 0;
+
+    if (s == NULL) {
+        err = EINVAL;
+        goto out;
+    }
+
+    if (n > smax) {
+        err = EOVERFLOW;
+        n = smax;
+    }
+
+    /* Calling through a volatile pointer should never be optimised away. */
+    (*__memset_vp)(s, c, n);
+
+    out:
+    if (err == 0)
+        return 0;
+    else {
+        errno = err;
+        /* XXX call runtime-constraint handler */
+        return err;
+    }
+}
+#endif
+
+sgx_status_t sgx_rijndael128GCM_encrypt(const sgx_aes_gcm_128bit_key_t *p_key, const uint8_t *p_src, uint32_t src_len,
+                                        uint8_t *p_dst, const uint8_t *p_iv, uint32_t iv_len, const uint8_t *p_aad, uint32_t aad_len,
+                                        sgx_aes_gcm_128bit_tag_t *p_out_mac)
+{
+	if ((src_len > INT_MAX) || (aad_len > INT_MAX) || (p_key == NULL) || ((src_len > 0) && (p_dst == NULL)) || ((src_len > 0) && (p_src == NULL))
+		|| (p_out_mac == NULL) || (iv_len != SGX_AESGCM_IV_SIZE) || ((aad_len > 0) && (p_aad == NULL))
+		|| (p_iv == NULL) || ((p_src == NULL) && (p_aad == NULL)))
+	{
+		return SGX_ERROR_INVALID_PARAMETER;
+	}
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+	int len = 0;
+	EVP_CIPHER_CTX * pState = NULL;
+
+	//CLEAR_OPENSSL_ERROR_QUEUE;
+
+	do {
+		// Create and init ctx
+		//
+		if (!(pState = EVP_CIPHER_CTX_new())) {
+			ret = SGX_ERROR_OUT_OF_MEMORY;
+			break;
+		}
+
+		// Initialise encrypt, key and IV
+		//
+		if (1 != EVP_EncryptInit_ex(pState, EVP_aes_128_gcm(), NULL, (unsigned char*)p_key, p_iv)) {
+			break;
+		}
+
+		// Provide AAD data if exist
+		//
+		if (NULL != p_aad) {
+			if (1 != EVP_EncryptUpdate(pState, NULL, &len, p_aad, aad_len)) {
+				break;
+			}
+		}
+
+		// Provide the message to be encrypted, and obtain the encrypted output.
+		//
+		if (1 != EVP_EncryptUpdate(pState, p_dst, &len, p_src, src_len)) {
+			break;
+		}
+
+		// Finalise the encryption
+		//
+		if (1 != EVP_EncryptFinal_ex(pState, p_dst + len, &len)) {
+			break;
+		}
+
+		// Get tag
+		//
+		if (1 != EVP_CIPHER_CTX_ctrl(pState, EVP_CTRL_GCM_GET_TAG, SGX_AESGCM_MAC_SIZE, p_out_mac)) {
+			break;
+		}
+		ret = SGX_SUCCESS;
+	} while (0);
+
+	if (ret != SGX_SUCCESS) {
+        //GET_LAST_OPENSSL_ERROR;
+	}
+
+	// Clean up and return
+	//
+	if (pState) {
+			EVP_CIPHER_CTX_free(pState);
+	}
+	return ret;
+}
+
+sgx_status_t sgx_rijndael128GCM_decrypt(const sgx_aes_gcm_128bit_key_t *p_key, const uint8_t *p_src,
+                                        uint32_t src_len, uint8_t *p_dst, const uint8_t *p_iv, uint32_t iv_len,
+                                        const uint8_t *p_aad, uint32_t aad_len, const sgx_aes_gcm_128bit_tag_t *p_in_mac)
+{
+	uint8_t l_tag[SGX_AESGCM_MAC_SIZE];
+
+	if ((src_len > INT_MAX) || (aad_len > INT_MAX) || (p_key == NULL) || ((src_len > 0) && (p_dst == NULL)) || ((src_len > 0) && (p_src == NULL))
+		|| (p_in_mac == NULL) || (iv_len != SGX_AESGCM_IV_SIZE) || ((aad_len > 0) && (p_aad == NULL))
+		|| (p_iv == NULL) || ((p_src == NULL) && (p_aad == NULL)))
+	{
+		return SGX_ERROR_INVALID_PARAMETER;
+	}
+	int len = 0;
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+	EVP_CIPHER_CTX * pState = NULL;
+
+	// CLEAR_OPENSSL_ERROR_QUEUE; ???
+
+	// Autenthication Tag returned by Decrypt to be compared with Tag created during seal
+	//
+	memset_s(&l_tag, SGX_AESGCM_MAC_SIZE, 0, SGX_AESGCM_MAC_SIZE);
+	memcpy(l_tag, p_in_mac, SGX_AESGCM_MAC_SIZE);
+
+	do {
+		// Create and initialise the context
+		//
+		if (!(pState = EVP_CIPHER_CTX_new())) {
+			ret = SGX_ERROR_OUT_OF_MEMORY;
+			break;
+		}
+
+		// Initialise decrypt, key and IV
+		//
+		if (!EVP_DecryptInit_ex(pState, EVP_aes_128_gcm(), NULL, (unsigned char*)p_key, p_iv)) {
+			break;
+		}
+
+		// Provide AAD data if exist
+		//
+		if (NULL != p_aad) {
+			if (!EVP_DecryptUpdate(pState, NULL, &len, p_aad, aad_len)) {
+				break;
+			}
+		}
+
+		// Decrypt message, obtain the plaintext output
+		//
+		if (!EVP_DecryptUpdate(pState, p_dst, &len, p_src, src_len)) {
+			break;
+		}
+
+		// Update expected tag value
+		//
+		if (!EVP_CIPHER_CTX_ctrl(pState, EVP_CTRL_GCM_SET_TAG, SGX_AESGCM_MAC_SIZE, l_tag)) {
+			break;
+		}
+
+		// Finalise the decryption. A positive return value indicates success,
+		// anything else is a failure - the plaintext is not trustworthy.
+		//
+		if (EVP_DecryptFinal_ex(pState, p_dst + len, &len) <= 0) {
+			break;
+		}
+		ret = SGX_SUCCESS;
+	} while (0);
+
+	if (ret != SGX_SUCCESS) {
+		//GET_LAST_OPENSSL_ERROR; ???
+	}
+
+	// Clean up and return
+	//
+	if (pState != NULL) {
+		EVP_CIPHER_CTX_free(pState);
+	}
+	memset_s(&l_tag, SGX_AESGCM_MAC_SIZE, 0, SGX_AESGCM_MAC_SIZE);
+	return ret;
+}
 typedef struct config_struct {
 	sgx_spid_t spid;
 	uint16_t quote_type;
@@ -102,8 +289,8 @@ typedef struct config_struct {
 	int strict_trust;
 	// 追加
 	//EVP_PKEY *image_meta_key;
-	//TODO 鍵が文字列なのは良くない
-	unsigned char image_metadata_key[16];
+	//TODO 鍵が文字列なのは良くない RSA鍵じゃないと行けないからこれは間違ってる
+	EVP_PKEY *request_decrypto_key;
 } config_t;
 
 void usage();
@@ -351,7 +538,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'i':
 			// imageメタデータの復号鍵を読み込む
-			if (!key_load_file(&config.image_meta_key, optarg, KEY_PRIVATE)) {
+			if (!key_load(&config.request_decrypto_key, optarg, KEY_PRIVATE)) {
 				crypto_perror("key_load_file");
 				eprintf("%s: could not load image_meta EC private key\n", optarg);
 				return 1;
@@ -365,7 +552,7 @@ int main(int argc, char *argv[])
 	}
 
 	//TODO 鍵が文字列なのは良くない
-	config.image_metadata_key = "abxsabxsabxsabxs";
+	// config.request_decrypto_key = (unsigned char*)"abxsabxsabxsabx";
 
 	/* We should have zero or one command-line argument remaining */
 
@@ -567,7 +754,9 @@ int main(int argc, char *argv[])
 		sgx_ra_msg1_t msg1;
 		sgx_ra_msg2_t msg2;
 		ra_msg4_t msg4;
+		// skは const sgx_aes_gcm_128bit_key_tと同じ
 		unsigned char smk[16], sk[16], mk[16];
+
 
 		/* Read message 0 and 1, then generate message 2 */
 
@@ -787,7 +976,7 @@ int process_msg3 (MsgIO *msgio, IAS_Connection *ias, sgx_ra_msg1_t *msg1,
 		}
 
 		//Task MRENCLAVE が master enclave のものか検証
-		if ( memcmp(&r->mr_enclave, &ME_MRENCLAVE, sizeof(sgx_measurement_t) != 0 ) {
+		if ( memcmp(&r->mr_enclave, &ME_MRENCLAVE, sizeof(sgx_measurement_t) != 0 ) ) {
 			//TODO eprintf使ったほうがいい？
 			printf("dont mutch reported mrenclave and Master Enclave mrenclave\n");
 		}
@@ -824,40 +1013,58 @@ int process_msg3 (MsgIO *msgio, IAS_Connection *ias, sgx_ra_msg1_t *msg1,
 			sha256_digest(sk, 16, hashsk);
 
 			uint8_t aes_gcm_iv[12] = {0}; 
+			// TODO sizeの指定
+			uint8_t crypted_msg[128] = {0};
+
 			uint8_t mac[16];
-			uint8_t crypted_msg[];
+
+			const sgx_aes_gcm_128bit_key_t *sk_key;
+			memcpy((void *)sk_key, (const void*)sk, sizeof(sgx_aes_gcm_128bit_key_t));
 
 			// Task image_meta復号鍵を RA した共通鍵で暗号化
+			sgx_status_t ret;
+			// ret = sample_rijndael128GCM_encrypt(&g_sp_db.sk_key,
+            //             &g_secret[0],
+            //             p_att_result_msg->secret.payload_size,
+            //             p_att_result_msg->secret.payload,
+            //             &aes_gcm_iv[0],
+            //             SAMPLE_SP_IV_SIZE,
+            //             NULL,
+            //             0,
+            //             &p_att_result_msg->secret.payload_tag);
+
 			ret = sgx_rijndael128GCM_encrypt(
-				sk,
-				config.image_metadata_key,
-				sizeof(config.image_metadata_key), //sizeof(EVP_PKEY),
+				sk_key,
+				(const uint8_t*)&config->request_decrypto_key,
+				sizeof(config->request_decrypto_key), //sizeof(EVP_PKEY),
 				crypted_msg,
 				&aes_gcm_iv[0],
 				12,
 				NULL,
 				0,
-				mac
-			);			
+				&mac
+			);
 			//TODO エラーハンドリング
 			//if ( ret != ) {}
 
 			/*Task enclaveへrequest復号鍵を送信 */
 			msgio->send(crypted_msg, sizeof(crypted_msg));
 
+			uuid_t client_id;
+
 			/*Task client idを受けとる */
 			ra_req_data_t *ra_req_data;
-			msgio->read(crypted_msg, sizeof(crypted_msg));
+			msgio->read((void **)&crypted_msg, &sz);
 			ret = sgx_rijndael128GCM_decrypt(
-				&sk,
-				ra_req_data,
+				sk_key,
+				(const uint8_t*)ra_req_data,
 				sizeof(ra_req_data),
 				client_id,
 				&aes_gcm_iv[0],
 				12,
 				NULL,
 				0,
-				mac //TODO このmacって検証しなくていいの？関数がしてくれないの？
+				&mac //TODO このmacって検証しなくていいの？関数がしてくれないの？
 			);
 
 			// golangにお願いする
@@ -865,35 +1072,46 @@ int process_msg3 (MsgIO *msgio, IAS_Connection *ias, sgx_ra_msg1_t *msg1,
 			// vm_mrenclave = get_vm_mrenclave(ra_req_data->nonce, ra_req_data->cliend_id, image_id);
 
 			/*Task master enclave へ正しい mrenclave を送信する*/
+			// ret = sample_rijndael128GCM_encrypt(&g_sp_db.sk_key,
+            //             &g_secret[0],
+            //             p_att_result_msg->secret.payload_size,
+            //             p_att_result_msg->secret.payload,
+            //             &aes_gcm_iv[0],
+            //             SAMPLE_SP_IV_SIZE,
+            //             NULL,
+            //             0,
+            //             &p_att_result_msg->secret.payload_tag);
 			ret = sgx_rijndael128GCM_encrypt(
-				sk,
-				vm_mrenclave,
+				sk_key,
+				(const uint8_t*)vm_mrenclave,
 				sizeof(vm_mrenclave), //sizeof(EVP_PKEY),
 				crypted_msg,
 				&aes_gcm_iv[0],
 				12,
 				NULL,
 				0,
-				mac
+				&mac
 			);
 			msgio->send(crypted_msg, sizeof(crypted_msg));
 
 			/*Task master enclave からの完了報告を待つ*/
-			msgio->read(crypted_msg, sizeof(crypted_msg));
+			msgio->read((void**)&crypted_msg, &sz);
 			msg_cmpt_t *msg;
+			// ret = sample_rijndael128GCM_decrypt(
+			// );
 			ret = sgx_rijndael128GCM_decrypt(
-				&sk,
-				crypted_msg,
+				sk_key,
+				(const uint8_t*)crypted_msg,
 				sizeof(crypted_msg),
-				msg,
+				(uint8_t*)msg,
 				&aes_gcm_iv[0],
 				12,
 				NULL,
 				0,
-				mac //TODO このmacって検証しなくていいの？関数がしてくれないの？
+				&mac //TODO このmacって検証しなくていいの？関数がしてくれないの？
 			);
 
-			printf("complete launch vm! image_id:%s, cliend_id:%s",msg->image_id, msg->cliend_id);
+			printf("complete launch vm! image_id:%s, cliend_id:%s",msg->image_id, msg->client_id);
 
 			if ( verbose ) {
 				eprintf("MK         = %s\n", hexstring(mk, 16));

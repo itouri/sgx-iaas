@@ -47,9 +47,9 @@ Enclave.signed.so: Enclave/Enclave.signed.so
 ## AM_CPPFLAGS += 
 ## AM_CFLAGS = 
 
-AM_CXXFLAGS = -std=c++11 
+AM_CXXFLAGS = -std=c++11  -lsgx_tcrypto
 
-AM_CPPFLAGS += -fno-builtin-memset @OPENSSL_CPPFLAGS@
+AM_CPPFLAGS += -fno-builtin-memset @OPENSSL_CPPFLAGS@  -lsgx_tcrypto
 
 ## Additional targets to remove with 'make clean'. You must list
 ## any edger8r generated files here.
@@ -101,7 +101,7 @@ sp_LDFLAGS= $(AM_LDFLAGS) @OPENSSL_LDFLAGS@ @CURL_LDFLAGS@
 ## targets work on simulation builds.
 
 client_LDADD=-l$(SGX_URTS_LIB) -lsgx_ukey_exchange -l$(SGX_UAE_SERVICE_LIB) \
-	-lcrypto -l:libsgx_capable.a -lpthread -ldl
+	 -lsgx_tcrypto -lcrypto -l:libsgx_capable.a -lpthread -ldl
 
 sp_LDADD=-lcrypto @CURL_LIBS@
 
