@@ -33,12 +33,12 @@ in the License.
 
 #include "e_fileio.h"
 
-#include "stdlib.h"
-#include "string.h"
-#include "sgx_tcrypto.h"
-#include "se_tcrypto_common.h"
-#include "openssl/aes.h"
-#include "openssl/evp.h"
+// #include "stdlib.h"
+// #include "string.h"
+// #include "sgx_tcrypto.h"
+// #include "se_tcrypto_common.h"
+// #include "openssl/aes.h"
+// #include "openssl/evp.h"
 
 #define MAC_SIZE 16
 
@@ -356,8 +356,6 @@ sgx_status_t enclave_launch_vm(unsigned char *cry_req_data, uuid_t *image_id, sg
 	msg_cmpt_t msg_cmpt;
 	memcpy(&msg_cmpt.image_id, &image_id, sizeof(uuid_t));
 	memcpy(&msg_cmpt.client_id, &req_data->client_id, sizeof(uuid_t));
-
-	ippsRSAEncrypt();
 
 	uint8_t crypted_msg[512];
 	ret = sgx_rijndael128GCM_encrypt(

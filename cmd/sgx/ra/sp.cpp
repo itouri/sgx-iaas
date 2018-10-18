@@ -401,17 +401,17 @@ int main(int argc, char *argv[])
 		case 0:
 			break;
 		case 'A':
-			if (!cert_load_file(&config.signing_ca, optarg)) {
-				crypto_perror("cert_load_file");
-				eprintf("%s: could not load IAS Signing Cert CA\n", optarg);
-				return 1;
-			}
+			// if (!cert_load_file(&config.signing_ca, optarg)) {
+			// 	crypto_perror("cert_load_file");
+			// 	eprintf("%s: could not load IAS Signing Cert CA\n", optarg);
+			// 	return 1;
+			// }
 
-			config.store = cert_init_ca(config.signing_ca);
-			if (config.store == NULL) {
-				eprintf("%s: could not initialize certificate store\n", optarg);
-				return 1;
-			}
+			// config.store = cert_init_ca(config.signing_ca);
+			// if (config.store == NULL) {
+			// 	eprintf("%s: could not initialize certificate store\n", optarg);
+			// 	return 1;
+			// }
 			++flag_ca;
 
 			break;
@@ -424,11 +424,11 @@ int main(int argc, char *argv[])
 
 			break;
 		case 'C':
-			config.cert_file = strdup(optarg);
-			if (config.cert_file == NULL) {
-				perror("strdup");
-				return 1;
-			}
+			// config.cert_file = strdup(optarg);
+			// if (config.cert_file == NULL) {
+			// 	perror("strdup");
+			// 	return 1;
+			// }
 			++flag_cert;
 
 			break;
