@@ -42,63 +42,161 @@ in the License.
 
 #define MAC_SIZE 16
 
-// https://blanktar.jp/blog/2014/10/c_language-aes-with-openssl.html
-unsigned char* decrypt(
-    const char* key,
-    const unsigned char* data,
-    const size_t datalen,
-    const unsigned char* iv,
-    unsigned char* dest,
-    const size_t destlen
-){
-	// EVP_CIPHER_CTX *de;
-    // // え？enclaveでなんで malloc できるん？
-    // de = (EVP_CIPHER_CTX *)malloc(sizeof(EVP_CIPHER_CTX));
-
-	// int f_len = 0;
-	// int p_len = datalen;
-
-	// memset(dest, 0x00, destlen);
-
-	// EVP_CIPHER_CTX_init(de);
-	// EVP_DecryptInit_ex(de, EVP_aes_128_cbc(), NULL, (unsigned char*)key, iv);
-
-	// EVP_DecryptUpdate(de, (unsigned char *)dest, &p_len, data, datalen);
-	// //EVP_DecryptFinal_ex(&de, (unsigned char *)(dest + p_len), &f_len);
-
-	// EVP_CIPHER_CTX_cleanup(de);
-
-	// return dest;
-}
-
-// MRENCLAVE を rsa 公開鍵で暗号化するために使う
-unsigned char* encrypt( const char* key,
-						const unsigned char* data,
-						const size_t datalen,
-						const unsigned char* iv,
-						unsigned char* dest,
-						const size_t destlen)
+/**
+ * Encryption
+ */
+int
+elgamal_encrypt(byte **encData, byte *data, int dataLen, const EC_KEY *eckey) 
 {
-	// EVP_CIPHER_CTX *en;
-    // // やっぱmallocが必要だよね どうやら malloc をラップしているライブラリがあるみたい
-    // en = (EVP_CIPHER_CTX *)malloc(sizeof(EVP_CIPHER_CTX));
-    // EVP_CIPHER_CTX_init(en);
+	BN_CTX *ctx = NULL;
+	BIGNUM *r = NULL, *p = NULL, *m;
+	EC_POINT *C1 = NULL, *C2 = NULL;
+	EC_POINT *Tmp = NULL, *M;
+	const EC_POINT *Pkey;
+	const EC_GROUP *group;
+	int    c1Len, c2Len;
+	int    rv;
 
-	// int i, f_len=0;
-	// int c_len = destlen;
+	if ((group = EC_KEY_get0_group(eckey)) == NULL) {
+		return 0;
+	}
+	p = BN_new();
+	ctx = BN_CTX_new();
+	EC_GROUP_get_curve_GFp(group, p, NULL, NULL, ctx);
 
-	// memset(dest, 0x00, destlen);
+	// printf(" p = ");
+	// BN_print_fp(stdout, p);
+	// puts("");
 
-	// EVP_EncryptInit_ex(en, EVP_aes_128_cbc(), NULL, (unsigned char*)key, iv);
+	/* C1 = r*G */
+	C1 = EC_POINT_new(group);
 
-	// EVP_EncryptUpdate(en, dest, &c_len, (unsigned char *)data, datalen);
-	// //EVP_EncryptFinal_ex(&en, (unsigned char *)(dest + c_len), &f_len);
+	/* generate random number r */ 
+	r = BN_new();
+	M = EC_POINT_new(group);
+	m = BN_new();
+	do {
+		if (!BN_rand_range(r, p)) {
+			return 0;
+		}
+	} while (BN_is_zero(r));
+	// printf(" r = ");
+	// BN_print_fp(stdout, r);
+	// puts("");
 
-	// EVP_CIPHER_CTX_cleanup(en);
+	EC_POINT_mul(group, C1, r, NULL, NULL, ctx);
 
-	// return dest;
+	/* C2 = r*P + M */ 
+	/* M */
+	BN_bin2bn(data, dataLen, m);
+	rv = EC_POINT_set_compressed_coordinates_GFp(group, M, m, 1, ctx);
+	if (!rv) {
+		printf("error EC_POINT_set_compressed_coordinates_GFp");
+		return 0;
+	}
+
+	C2 = EC_POINT_new(group);
+	Tmp = EC_POINT_new(group);
+	Pkey = EC_KEY_get0_public_key(eckey);
+	EC_POINT_mul(group, Tmp, NULL, Pkey, r, ctx);
+	EC_POINT_add(group, C2, Tmp, M, ctx);
+
+	/* cipher text C = (C1, C2) */ 
+	c1Len = EC_POINT_point2oct(group, C1, POINT_CONVERSION_COMPRESSED,
+							   NULL, 0, ctx);
+	printf(" Point converted length (C1) = %d\n", c1Len);
+	c2Len =	EC_POINT_point2oct(group, C2, POINT_CONVERSION_COMPRESSED,
+							   NULL, 0, ctx);
+	printf(" Point converted length (C2) = %d\n", c1Len);
+	*encData = OPENSSL_malloc(c1Len + c2Len);
+	EC_POINT_point2oct(group, C1, POINT_CONVERSION_COMPRESSED,
+							*encData, c1Len, ctx);
+	EC_POINT_point2oct(group, C2, POINT_CONVERSION_COMPRESSED,
+							*encData + c1Len, c2Len, ctx);
+
+	BN_clear_free(p);
+	BN_clear_free(r);
+	BN_clear_free(m);
+	EC_POINT_free(C1);
+	EC_POINT_free(C2);
+	EC_POINT_free(M);
+	EC_POINT_free(Tmp);
+	BN_CTX_free(ctx);
+
+	return (c1Len + c2Len);
 }
 
+/**
+ * Decryption
+ */
+int
+elgamal_decrypt(byte **decData, byte *encData, int encLen, const EC_KEY *eckey) 
+{
+	int rv;
+	const EC_GROUP *group;
+	const BIGNUM *prvKey;
+	BN_CTX *ctx;
+	EC_POINT *C1 = NULL, *C2 = NULL;
+	EC_POINT *M = NULL, *Tmp = NULL;
+
+	group = EC_KEY_get0_group(eckey);
+	prvKey = EC_KEY_get0_private_key(eckey);
+#ifdef DEBUG
+	printf(" prvKey = ");
+	BN_print_fp(stdout, prvKey);
+	puts("");
+#endif
+	C1 = EC_POINT_new(group);
+	C2 = EC_POINT_new(group);
+	ctx = BN_CTX_new();
+
+	/* C1 */
+#ifdef DEBUG
+	printHex("C1", encData, encLen / 2);
+#endif
+	rv = EC_POINT_oct2point(group, C1, encData, encLen / 2, ctx);
+	if (!rv) {
+		printf("EC_POINT_oct2point error (C1)\n");
+		return 0;
+	}
+
+	/* C2 */
+#ifdef DEBUG
+	printHex("C2", encData + encLen / 2, encLen / 2);
+#endif
+	rv = EC_POINT_oct2point(group, C2, encData + encLen / 2, encLen / 2,
+							ctx);
+	if (!rv) {
+		printf("EC_POINT_oct2point error (C2)\n");
+		return 0;
+	}
+	Tmp = EC_POINT_new(group);
+	M = EC_POINT_new(group);
+
+	/* M = C2 - x C1 */ 
+	EC_POINT_mul(group, Tmp, NULL, C1, prvKey, ctx);
+	EC_POINT_invert(group, Tmp, ctx);
+	EC_POINT_add(group, M, C2, Tmp, ctx);
+
+	/* Output M */ 
+	rv = EC_POINT_point2oct(group, M, POINT_CONVERSION_COMPRESSED, NULL, 0,
+							ctx);
+
+#ifdef DEBUG
+	printf(" Point converted length = %d\n", rv);
+#endif
+	*decData = OPENSSL_malloc(rv);
+	EC_POINT_point2oct(group, M, POINT_CONVERSION_COMPRESSED, *decData,
+					   rv, ctx);
+
+	EC_POINT_free(C1);
+	EC_POINT_free(C2);
+	EC_POINT_free(M);
+	EC_POINT_free(Tmp);
+	BN_CTX_free(ctx);
+
+	return rv;
+}
 static const sgx_ec256_public_t def_service_public_key = {
     {
         0x72, 0x12, 0x8a, 0x7a, 0x17, 0x52, 0x6e, 0xbf,
