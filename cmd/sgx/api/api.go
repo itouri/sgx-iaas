@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/labstack/echo"
+	"github.com/LarryBattle/nonce-golang"
 )
 
 var (
@@ -50,6 +51,40 @@ func init() {
 		}
 		imageCryptoKey += string(buf)
 	}
+}
+
+func PostImage(c echo.Context) error {
+	/* mrenclave を取得する */
+	// 実行してみて mrenclave を取得する
+
+	/* imageIDを発行する */
+	image_id := uuid.Must(uuid.NewV4(), err)
+	if err != nil {
+		fmt.Println("uuid.Must(uuid.NewV4(), err)")
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	/* clientIDを発行する(特に同じクライアントだから同じにする必要もないと思う) -> MRSIGNER で良くない？？ */
+	client_id := uuid.Must(uuid.NewV4(), err)
+	if err != nil {
+		fmt.Println("uuid.Must(uuid.NewV4(), err)")
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	/* nonceを発行する */
+	nonce := nonce-golang.NewToken()
+
+	/* 読み取るのはC言語!! */
+
+	/* image_idとclient_idとnonceを紐付けてDBに保存する正直きつい */
+	// fileに保存でいい？
+	
+	
+	/* clientに返すもの */
+	// image_id
+	// clientd_id
+	// nonce
+	return c.
 }
 
 func GetImageCryptoKey(c echo.Context) error {
