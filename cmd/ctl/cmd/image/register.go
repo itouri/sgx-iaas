@@ -65,7 +65,7 @@ func runRegisterCmd(command *cobra.Command, args []string) error {
 	contentType := bodyWriter.FormDataContentType()
 	bodyWriter.Close()
 
-	resp, err := http.Post(glanceURL+"/v1/images", contentType, bodyBuf)
+	resp, err := http.Post(glanceURL+"/images", contentType, bodyBuf)
 	if err != nil {
 		fmt.Println("Posting feiled: URL:" + glanceURL + "/images")
 		return err

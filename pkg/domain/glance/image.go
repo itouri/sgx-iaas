@@ -1,6 +1,6 @@
 package glance
 
-import uuid "github.com/satori/go.uuid"
+import "github.com/google/uuid"
 
 // image構造体は必要 中にはimageの状態を格納
 type Image struct {

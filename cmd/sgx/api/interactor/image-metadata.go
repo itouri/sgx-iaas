@@ -3,9 +3,9 @@ package interactor
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/itouri/sgx-iaas/pkg/db/mongo"
 	"github.com/itouri/sgx-iaas/pkg/domain/ras"
-	uuid "github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2/bson"
 )
 

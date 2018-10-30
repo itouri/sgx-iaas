@@ -12,9 +12,9 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.GET("/v1/vm/status/:image_id", api.GetAllServices)
-	e.GET("/v1/vm/status/", api.GetAllServices)
-	e.POST("/v1/vm/:image_id/create", api.PostService)
+	e.GET("/vm/status/:image_id", api.GetAllServices)
+	e.GET("/vm/status/", api.GetAllServices)
+	e.POST("/vm/:image_id/create", api.PostService)
 
 	e.Start(":1323")
 }

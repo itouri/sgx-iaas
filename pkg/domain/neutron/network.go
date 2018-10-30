@@ -1,6 +1,6 @@
 package neutron
 
-import uuid "github.com/satori/go.uuid"
+import "github.com/google/uuid"
 
 type Network struct {
 	ID   uuid.UUID

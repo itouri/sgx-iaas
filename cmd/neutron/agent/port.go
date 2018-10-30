@@ -3,8 +3,8 @@ package agent
 import (
 	"os/exec"
 
+	"github.com/google/uuid"
 	"github.com/itouri/sgx-iaas/pkg/domain/neutron"
-	uuid "github.com/satori/go.uuid"
 )
 
 var ports []neutron.Port

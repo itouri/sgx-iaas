@@ -1,8 +1,8 @@
 package agent
 
 import (
+	"github.com/google/uuid"
 	"github.com/itouri/sgx-iaas/pkg/domain/heat"
-	uuid "github.com/satori/go.uuid"
 )
 
 var registeredAlarms []heat.Alarm

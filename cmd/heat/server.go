@@ -12,11 +12,11 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.GET("/v1/stacks", api.GetStack)
-	e.GET("/v1/stacks", api.GetAllStacks)
-	e.POST("/v1/stacks", api.PostStack)
+	e.GET("/stacks", api.GetStack)
+	e.GET("/stacks", api.GetAllStacks)
+	e.POST("/stacks", api.PostStack)
 
-	e.POST("/v1/action/:action_id", api.PostAction)
+	e.POST("/action/:action_id", api.PostAction)
 
 	e.Start(":1323")
 }

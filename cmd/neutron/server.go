@@ -13,29 +13,29 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// floatingips
-	e.GET("/v1/floatingips", api.GetAllFloatingIPs)
-	e.GET("/v1/floatingips/:floatingip_id", api.GetFloatingIP)
-	e.POST("/v1/floatingips", api.PostFloatingIP)
-	e.PUT("/v1/floatingips/:floatingip_id", api.PutFloatingIP)
-	e.DELETE("/v1/floatingips/:floatingip_id", api.DeleteFloatingIP)
+	e.GET("/floatingips", api.GetAllFloatingIPs)
+	e.GET("/floatingips/:floatingip_id", api.GetFloatingIP)
+	e.POST("/floatingips", api.PostFloatingIP)
+	e.PUT("/floatingips/:floatingip_id", api.PutFloatingIP)
+	e.DELETE("/floatingips/:floatingip_id", api.DeleteFloatingIP)
 
 	// network
-	e.GET("/v1/networks", api.GetAllNetworks)
-	e.GET("/v1/networks/:network_id", api.GetNetwork)
-	e.POST("/v1/networks", api.PostNetwork)
-	e.PUT("/v1/networks/:network_id", api.PutNetwork)
-	e.DELETE("/v1/networks/:network_id", api.DeleteNetwork)
+	e.GET("/networks", api.GetAllNetworks)
+	e.GET("/networks/:network_id", api.GetNetwork)
+	e.POST("/networks", api.PostNetwork)
+	e.PUT("/networks/:network_id", api.PutNetwork)
+	e.DELETE("/networks/:network_id", api.DeleteNetwork)
 
 	// router
-	e.GET("/v1/routers", api.GetAllRouters)
-	e.GET("/v1/routers/:router_id", api.GetRouter)
-	e.POST("/v1/routers", api.PostRouter)
-	e.PUT("/v1/routers/:router_id", api.PutRouter)
-	e.DELETE("/v1/routers/:router_id", api.DeleteRouter)
+	e.GET("/routers", api.GetAllRouters)
+	e.GET("/routers/:router_id", api.GetRouter)
+	e.POST("/routers", api.PostRouter)
+	e.PUT("/routers/:router_id", api.PutRouter)
+	e.DELETE("/routers/:router_id", api.DeleteRouter)
 
-	e.GET("/v1/stacks", api.GetStack)
-	e.GET("/v1/stacks", api.GetAllStacks)
-	e.POST("/v1/stacks", api.PostImage)
+	e.GET("/stacks", api.GetStack)
+	e.GET("/stacks", api.GetAllStacks)
+	e.POST("/stacks", api.PostImage)
 
 	e.Start(":1323")
 }

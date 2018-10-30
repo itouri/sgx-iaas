@@ -13,21 +13,21 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// endpoint -> serviceに統一
-	// e.GET("/v1/endpoints", api.GetAllEndPoints)
-	// e.POST("/v1/endpoints", api.PostEndPoint)
+	// e.GET("/endpoints", api.GetAllEndPoints)
+	// e.POST("/endpoints", api.PostEndPoint)
 
-	// e.GET("/v1/endpoints/:endpoint_id", api.GetEndPoint)
-	// e.PATCH("/v1/endpoints/:endpoint_id", api.PatchEndPoint)
-	// e.DELETE("/v1/endpoints/:endpoint_id", api.DeleteEndPoint)
+	// e.GET("/endpoints/:endpoint_id", api.GetEndPoint)
+	// e.PATCH("/endpoints/:endpoint_id", api.PatchEndPoint)
+	// e.DELETE("/endpoints/:endpoint_id", api.DeleteEndPoint)
 
 	// services
-	//e.GET("/v1/services", api.GetAllServices)
-	e.GET("/v1/services/resolve/:service_type", api.GetServiceResolve)
-	e.POST("/v1/services", api.PostService)
+	//e.GET("/services", api.GetAllServices)
+	e.GET("/services/resolve/:service_type", api.GetServiceResolve)
+	e.POST("/services", api.PostService)
 
-	//e.GET("/v1/services/:service_id", api.GetService)
-	//e.PATCH("/v1/services/:service_id", api.PatchService)
-	e.DELETE("/v1/services/:service_id", api.DeleteService)
+	//e.GET("/services/:service_id", api.GetService)
+	//e.PATCH("/services/:service_id", api.PatchService)
+	e.DELETE("/services/:service_id", api.DeleteService)
 
 	e.Start(":1323")
 }

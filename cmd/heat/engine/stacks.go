@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/itouri/sgx-iaas/pkg/domain/heat"
-	uuid "github.com/satori/go.uuid"
 )
 
 var stacks []heat.Template

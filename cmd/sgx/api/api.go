@@ -9,12 +9,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 
 	nonce "github.com/LarryBattle/nonce-golang"
 	"github.com/itouri/sgx-iaas/cmd/sgx/api/interactor"
 	"github.com/itouri/sgx-iaas/pkg/domain/ras"
 	"github.com/labstack/echo"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 var (
@@ -84,10 +85,14 @@ func PostImage(c echo.Context) error {
 	}
 
 	/* mrenclave を取得する */
+	enclaveSoFilePath := 
+
 	// 実行してみて mrenclave を取得する
+	// .soを実行して get_mrenclave()を実行する
+	out, err := exec.Command().Output()
 
 	/* imageIDを発行する */
-	imageID := uuid.Must(uuid.NewV4(), err)
+	imageID := uuid.New()
 	if err != nil {
 		fmt.Printf("cant generate imageID uuid: %s", err.Error())
 		return c.String(http.StatusBadRequest, err.Error())
@@ -112,9 +117,9 @@ func PostImage(c echo.Context) error {
 func GetClientID(c echo.Context) error {
 	var err error
 	/* clientIDを発行する(特に同じクライアントだから同じにする必要もないと思う) -> MRSIGNER で良くない？？ */
-	clientID := uuid.Must(uuid.NewV4(), err)
+	clientID := uuid.New()
 	if err != nil {
-		fmt.Println("uuid.Must(uuid.NewV4(), err)")
+		fmt.Println("uuid.New()")
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 

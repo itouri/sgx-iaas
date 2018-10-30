@@ -1,7 +1,7 @@
 package heat
 
 import (
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 type ASGProperty struct {

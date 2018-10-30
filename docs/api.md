@@ -1,9 +1,9 @@
 # api
 
 ## glance
-GET /images/:image_id
+GET /images/:image_id <!--impled-->
 (GET /images)
-POST /images
+POST /images <!--impled-->
 (DELETE /images/:image_id)
 
 <!-- ## nova

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 type EnumServiceType int

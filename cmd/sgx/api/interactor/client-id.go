@@ -1,8 +1,8 @@
 package interactor
 
 import (
+	"github.com/google/uuid"
 	"github.com/itouri/sgx-iaas/pkg/db/mongo"
-	uuid "github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2/bson"
 )
 

@@ -59,7 +59,7 @@ func RegisterEndpoint(t keystone.EnumServiceType, ipaddr string, port uint64) er
 	fmt.Println(string(sJSON))
 
 	endpoint := GetEndpointURL()
-	resp, err := http.Post("http://"+endpoint+"/v1/services", "application/json", bytes.NewBuffer(sJSON))
+	resp, err := http.Post("http://"+endpoint+"/services", "application/json", bytes.NewBuffer(sJSON))
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ type Req struct {
 
 func ResolveServiceEndpoint(endpointURL string, st keystone.EnumServiceType) (string, error) {
 	// heatに情報を送るためにはendpointからIPを解決する必要がある
-	resp, err := http.Get(endpointURL + "/v1/services/resolve/" + st.String())
+	resp, err := http.Get(endpointURL + "/services/resolve/" + st.String())
 	if err != nil {
 		return "", err
 	}
