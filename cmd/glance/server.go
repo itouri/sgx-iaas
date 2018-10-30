@@ -23,11 +23,11 @@ func main() {
 		return
 	}
 
-	e.GET("/v1/images/:image_id", api.GetImage)
-	//e.GET("/v1/images/status/:image_id", api.GetImageStatus)
-	//e.GET("/v1/images/status", api.GetAllImageStatus)
-	e.POST("/v1/images", api.PostImage)
-	e.DELETE("/v1/images/:image_id", api.DeleteImage)
+	e.GET("/images/:image_id", api.GetImage)
+	//e.GET("/images/status/:image_id", api.GetImageStatus)
+	//e.GET("/images/status", api.GetAllImageStatus)
+	e.POST("/images", api.PostImage)
+	e.DELETE("/images/:image_id", api.DeleteImage)
 
 	// TODO
 	//e.File("/image", "./image/")

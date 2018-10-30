@@ -7,15 +7,22 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
+	"net/http"
 	"os"
 
+	nonce "github.com/LarryBattle/nonce-golang"
+	"github.com/itouri/sgx-iaas/cmd/sgx/api/interactor"
+	"github.com/itouri/sgx-iaas/pkg/domain/ras"
 	"github.com/labstack/echo"
-	"github.com/LarryBattle/nonce-golang"
+	uuid "github.com/satori/go.uuid"
 )
 
 var (
 	imageCryptoKey string
 )
+
+var imageMetadataInteractor *interactor.ImageMetadataInteractor
+var clientIDInteractor *interactor.ClientIDInteractor
 
 const (
 	pubkeyFilePath = "./pub_image_crypto_key.pem"
@@ -23,6 +30,9 @@ const (
 )
 
 func init() {
+	imageMetadataInteractor = interactor.NewImageMetadataInteractor()
+	clientIDInteractor = interactor.NewClientIDInteractor()
+
 	if !isExist(pubkeyFilePath) {
 		err := generateKey()
 		if err != nil {
@@ -54,40 +64,67 @@ func init() {
 }
 
 func PostImage(c echo.Context) error {
+	// 本当はクライアントを認証するときにもっと色々な情報が必要なんだと思う
+	clientIDstr := c.Param("client_id")
+	if clientIDstr != "" {
+		return c.String(http.StatusBadRequest, "client_id is not included")
+	}
+
+	clientID, err := uuid.FromString(clientIDstr)
+	if err != nil {
+		fmt.Printf("cant convert cliend_id to UUID: %s", err)
+		return c.String(http.StatusInternalServerError, "cant convert cliend_id to UUID")
+	}
+
+	/* client_idが登録済みか検証 */
+	id, err := clientIDInteractor.FindOneByCliendID(clientID)
+	if id == nil {
+		fmt.Printf("cant found UUID: %s", err)
+		return c.String(http.StatusInternalServerError, "cant found UUID")
+	}
+
 	/* mrenclave を取得する */
 	// 実行してみて mrenclave を取得する
 
 	/* imageIDを発行する */
-	image_id := uuid.Must(uuid.NewV4(), err)
+	imageID := uuid.Must(uuid.NewV4(), err)
 	if err != nil {
-		fmt.Println("uuid.Must(uuid.NewV4(), err)")
-		return c.String(http.StatusBadRequest, err.Error())
-	}
-
-	/* clientIDを発行する(特に同じクライアントだから同じにする必要もないと思う) -> MRSIGNER で良くない？？ */
-	client_id := uuid.Must(uuid.NewV4(), err)
-	if err != nil {
-		fmt.Println("uuid.Must(uuid.NewV4(), err)")
+		fmt.Printf("cant generate imageID uuid: %s", err.Error())
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
 	/* nonceを発行する */
-	nonce := nonce-golang.NewToken()
+	nonce := nonce.NewToken()
 
-	/* 読み取るのはC言語!! */
+	imd := &ras.ImageMetadata{}
+	imageMetadataInteractor.InsertImageMetadata(imd)
+	if err != nil {
+		fmt.Printf("cant InsertImageMetadata: %s", err.Error())
+		return c.String(http.StatusBadRequest, err.Error())
+	}
 
-	/* image_idとclient_idとnonceを紐付けてDBに保存する正直きつい */
-	// fileに保存でいい？
-	
-	
 	/* clientに返すもの */
-	// image_id
-	// clientd_id
-	// nonce
-	return c.
+	// image_id, nonce
+	ret := imageID.String() + "," + nonce
+	return c.String(http.StatusOK, ret)
 }
 
-func GetImageCryptoKey(c echo.Context) error {
+func GetClientID(c echo.Context) error {
+	var err error
+	/* clientIDを発行する(特に同じクライアントだから同じにする必要もないと思う) -> MRSIGNER で良くない？？ */
+	clientID := uuid.Must(uuid.NewV4(), err)
+	if err != nil {
+		fmt.Println("uuid.Must(uuid.NewV4(), err)")
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	// DBにclient_idを登録
+	clientIDstr := clientID.String()
+
+	return c.String(http.StatusOK, clientIDstr)
+}
+
+func GetCryptoKey(c echo.Context) error {
 	return c.File(pubkeyFilePath)
 }
 

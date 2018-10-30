@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  branch = "master"
+  digest = "1:a0360d5b08aba72af2527cca790ebab98a3c6d17db760e618b92dd51f3489742"
+  name = "github.com/LarryBattle/nonce-golang"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "a7d5615a19fdf4f4489ff011655865e3e85e9a10"
+
+[[projects]]
   digest = "1:e92f5581902c345eb4ceffdcd4a854fb8f73cf436d47d837d1ec98ef1fe0a214"
   name = "github.com/StackExchange/wmi"
   packages = ["."]
@@ -139,25 +147,6 @@
   version = "v2.18.07"
 
 [[projects]]
-  branch = "master"
-  digest = "1:65353758bf948837d78152c57d78d512197b5a77274576a32c0dd705193739e0"
-  name = "github.com/spacemonkeygo/openssl"
-  packages = [
-    ".",
-    "utils",
-  ]
-  pruneopts = "UT"
-  revision = "a66df3e4f5823ef3e7e78ce63fd7c889e8f85883"
-
-[[projects]]
-  branch = "master"
-  digest = "1:d6956eb95db39859627c18e1dd425b2ddd1a0d6000b643a4d4ada8fc887c1e09"
-  name = "github.com/spacemonkeygo/spacelog"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "2296661a0572a51438413369004fa931c2641923"
-
-[[projects]]
   digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
   name = "github.com/spf13/cobra"
   packages = ["."]
@@ -253,12 +242,12 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/LarryBattle/nonce-golang",
     "github.com/go-playground/validator",
     "github.com/labstack/echo",
     "github.com/labstack/echo/middleware",
     "github.com/satori/go.uuid",
     "github.com/shirou/gopsutil/mem",
-    "github.com/spacemonkeygo/openssl",
     "github.com/spf13/cobra",
     "github.com/streadway/amqp",
     "github.com/stretchr/testify/assert",

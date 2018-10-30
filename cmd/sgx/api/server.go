@@ -17,8 +17,9 @@ func main() {
 	// 	return
 	// }
 
-	//e.GET("/ra/image_crypto_key", GetImageCryptoKey)
-	e.POST("/ra/images", PostImage)
+	e.GET("/ra/client_id", GetClientID)
+	e.GET("/ra/crypto_key", GetCryptoKey)
+	e.POST("/ra/images/:client_id", PostImage)
 
 	e.Start(":22222")
 }

@@ -1,37 +1,25 @@
-<<<<<<< HEAD
-package api
-
-import (
-	"net/http"
-
-	"github.com/itouri/sgx-iaas/cmd/keystone/interactor"
-=======
 package compute
 
 import (
-	"fmt"
 	"net/http"
+	"os"
+	"os/exec"
 
 	"github.com/itouri/sgx-iaas/cmd/compute/interactor"
->>>>>>> d94fada8e0371209689bca177dc55f4ad60cd05d
 	"github.com/labstack/echo"
 )
 
 var (
-<<<<<<< HEAD
-	vmInteractor *interactor.VMInteractor
-=======
 	vmInteractor *interactor.VmInteractor
->>>>>>> d94fada8e0371209689bca177dc55f4ad60cd05d
-	computeURL   string
+	//computeURL   string
+	imageStorePath string
+	glanceURL      string
 )
 
 func init() {
-<<<<<<< HEAD
-	vmInteractor = &interactor.VMInteractor{}
-=======
 	vmInteractor = &interactor.VmInteractor{}
->>>>>>> d94fada8e0371209689bca177dc55f4ad60cd05d
+	imageStorePath = "./images/"
+	glanceURL = "" //TODO
 }
 
 // func GetVMStatus(c echo.Context) error {
@@ -63,33 +51,25 @@ func init() {
 func PostVMCreate(c echo.Context) error {
 	imageID := c.Param("image_id")
 	if imageID == "" {
-<<<<<<< HEAD
-		return c.String(http.StatusBadRequest, err.Error())
+		return c.String(http.StatusBadRequest, "image_id is lacked")
 	}
 
-	// TODO grapheneにどんなことを指示する?
+	filepath := imageStorePath + imageID
+	url := glanceURL + "/iamges/" + imageID
+
+	// Task glanceからimageを取ってくる
+	// wgetでいい気もする
+	if !isExist(filepath) {
+		err := exec.Command("wget", url, "-P", filepath).Run()
+	}
+
+	// 起動する
+	// unixドメインソケットでmaster enclaveの関数を実行する
 
 	return nil
 }
 
-func DeleteVM(c echo.Context) error {
-	imageID := c.Param("image_id")
-	if imageID == "" {
-		return c.String(http.StatusBadRequest, err.Error())
-	}
-
-	// TODO ...
-
-=======
-		return c.String(http.StatusBadRequest, "image_id is lacked")
-	}
-
-	// Task glanceからimageを取ってくる
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status code is %d", resp.StatusCode)
-	}
-
->>>>>>> d94fada8e0371209689bca177dc55f4ad60cd05d
-	return nil
+func isExist(filepath string) bool {
+	_, err := os.Stat(filepath)
+	return err == nil
 }
