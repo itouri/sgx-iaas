@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 
 	"mime/multipart"
 
@@ -24,6 +25,16 @@ func (ii *ImageInteractor) GetFileStatus() {
 
 func (ii *ImageInteractor) GetAllFileStatus() {
 	// TODO
+}
+
+func (ii *ImageInteractor) GetFileFromGlance(url string, filePath string) error {
+	if !isExist(filePath) {
+		err := exec.Command("wget", url, "-P", filePath).Run()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (ii *ImageInteractor) StoreFile(file *multipart.FileHeader) (*uuid.UUID, error) {

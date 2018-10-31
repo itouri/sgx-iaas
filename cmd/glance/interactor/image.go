@@ -26,39 +26,31 @@ func (ii *ImageInteractor) GetAllFileStatus() {
 	// TODO
 }
 
-func (ii *ImageInteractor) StoreFile(file *multipart.FileHeader) (*uuid.UUID, error) {
+func (ii *ImageInteractor) StoreFile(file *multipart.FileHeader, imageUUID uuid.UUID) error {
 	src, err := file.Open()
 	if err != nil {
-		fmt.Println("file.Open()")
-		return nil, err
+		return err
 	}
 	defer src.Close()
 
-	id := uuid.New()
-	if err != nil {
-		fmt.Println("uuid.New()")
-		return nil, err
-	}
-
+	imageID := imageUUID.String()
 	// uuid 中のハイフンが邪魔かも
-	dstFile, err := os.Create(ii.Path + id.String())
+	dstFile, err := os.Create(ii.Path + imageID)
 	if err != nil {
-		fmt.Println("os.Create(ii.Path + id.String())")
-		return nil, err
+		return err
 	}
 	defer dstFile.Close()
 
 	if _, err = io.Copy(dstFile, src); err != nil {
-		fmt.Println("io.Copy")
-		return nil, err
+		return err
 	}
 
-	return &id, nil
+	return nil
 }
 
 // TODO 怖い セキュリティ的にガバガバ
 func (ii *ImageInteractor) DeleteFile(imageID string) error {
-	filepath := ii.Path + "/" + imageID
+	filepath := ii.Path + imageID
 
 	if !isExist(filepath) {
 		return fmt.Errorf("image is not found:" + imageID)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/itouri/sgx-iaas/cmd/glance/interactor"
 	"github.com/labstack/echo"
 )
@@ -30,19 +31,30 @@ func GetImage(c echo.Context) error {
 // }
 
 func PostImage(c echo.Context) error {
+	imageID := c.Param("image_id")
+	if imageID == "" {
+		return c.String(http.StatusBadRequest, "image_id is lacked")
+	}
+
 	file, err := c.FormFile("image")
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
 
-	id, err := imageInteractor.StoreFile(file)
+	imageUUID, err := uuid.Parse(imageID)
+	if err != nil {
+		fmt.Println("parse uuid:" + err.Error())
+		return err
+	}
+
+	err = imageInteractor.StoreFile(file, imageUUID)
 	if err != nil {
 		fmt.Println("Error StoreFile:" + err.Error())
 		return err
 	}
 
-	return c.String(http.StatusOK, id.String())
+	return c.NoContent(http.StatusOK)
 }
 
 func DeleteImage(c echo.Context) error {

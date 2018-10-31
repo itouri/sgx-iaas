@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/exec"
 
+	"github.com/google/uuid"
 	"github.com/itouri/sgx-iaas/cmd/compute/interactor"
 	"github.com/labstack/echo"
 )
@@ -19,7 +19,7 @@ var (
 )
 
 func init() {
-	vmInteractor = &interactor.VmInteractor{}
+	//vmInteractor = &interactor.VmInteractor{}
 	imageStorePath = "./images/"
 	vmInteractor = &interactor.VmInteractor{
 		Path: imageStorePath,
@@ -66,17 +66,22 @@ func PostVMCreate(c echo.Context) error {
 
 	// Task glanceからimageを取ってくる
 	// wgetでいい気もする
-	if !isExist(filepath) {
-		err := exec.Command("wget", url, "-P", filepath).Run()
-		if err != nil {
-			fmt.Printf("get image is failed: %s", err.Error())
-			return c.String(http.StatusInternalServerError, "get image is failed")
-		}
+	err := imageInteractor.GetFileFromGlance(url, filepath)
+	if err != nil {
+		fmt.Printf("vm create is failed: %s", err.Error())
+		return c.String(http.StatusInternalServerError, "Create VM is failed")
+	}
+
+	// convert to uuid
+	imageUUID, err := uuid.Parse(imageID)
+	if err != nil {
+		fmt.Printf("image_id can't convert to UUID: %s", err.Error())
+		return c.String(http.StatusInternalServerError, "image_id can't convert to UUID")
 	}
 
 	// 起動する
 	// unixドメインソケットで master enclave の関数を実行する
-	err := vmInteractor.VMCreate(imageID, createReqMetadata)
+	err = vmInteractor.VMCreate(imageUUID, []byte(createReqMetadata))
 	if err != nil {
 		fmt.Printf("vm create is failed: %s", err.Error())
 		return c.String(http.StatusInternalServerError, "Create VM is failed")
