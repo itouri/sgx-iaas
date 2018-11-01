@@ -20,9 +20,12 @@ var (
 
 func init() {
 	//vmInteractor = &interactor.VmInteractor{}
-	imageStorePath = "./images/"
-	vmInteractor = &interactor.VmInteractor{
+	imageStorePath = "/var/app/images/"
+	imageInteractor = &interactor.ImageInteractor{
 		Path: imageStorePath,
+	}
+	vmInteractor = &interactor.VmInteractor{
+		ImagePath: imageStorePath,
 	}
 	glanceURL = "" //TODO
 }

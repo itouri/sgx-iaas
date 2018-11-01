@@ -8,12 +8,12 @@ import (
 )
 
 type VmInteractor struct {
-	FilePath string
+	ImagePath string
 }
 
 // do vm on graphene
 func (vc *VmInteractor) VMCreate(imageID uuid.UUID, createReqMetadata []byte) error {
-	conn, err := net.Dial("unix", vc.FilePath)
+	conn, err := net.Dial("unix", vc.ImagePath)
 	if err != nil {
 		log.Printf("error: % \n", err)
 		return err

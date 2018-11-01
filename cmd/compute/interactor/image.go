@@ -27,9 +27,10 @@ func (ii *ImageInteractor) GetAllFileStatus() {
 	// TODO
 }
 
-func (ii *ImageInteractor) GetFileFromGlance(url string, filePath string) error {
-	if !isExist(filePath) {
-		err := exec.Command("wget", url, "-P", filePath).Run()
+func (ii *ImageInteractor) GetFileFromGlance(url string, imageID string) error {
+	imagePath := ii.Path + imageID
+	if !isExist(imagePath) {
+		err := exec.Command("wget", url, "-P", ii.Path).Run()
 		if err != nil {
 			return err
 		}

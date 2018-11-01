@@ -3,7 +3,7 @@
 ## glance
 GET /images/:image_id <!--impled-->
 (GET /images)
-POST /images <!--impled-->
+POST /images/:image_id <!--impled-->
 (DELETE /images/:image_id)
 
 <!-- ## nova

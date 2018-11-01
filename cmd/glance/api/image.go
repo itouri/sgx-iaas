@@ -39,19 +39,19 @@ func PostImage(c echo.Context) error {
 	file, err := c.FormFile("image")
 	if err != nil {
 		fmt.Println(err.Error())
-		return err
+		return c.String(http.StatusBadRequest, "image_id is lacked")
 	}
 
 	imageUUID, err := uuid.Parse(imageID)
 	if err != nil {
 		fmt.Println("parse uuid:" + err.Error())
-		return err
+		return c.String(http.StatusBadRequest, "parse uuid")
 	}
 
 	err = imageInteractor.StoreFile(file, imageUUID)
 	if err != nil {
 		fmt.Println("Error StoreFile:" + err.Error())
-		return err
+		return c.String(http.StatusBadRequest, "Error StoreFile")
 	}
 
 	return c.NoContent(http.StatusOK)
