@@ -17,7 +17,7 @@ func init() {
 	dbc := mongo.DbConfig{
 		Host:     "localhost",
 		Port:     27017,
-		Database: "image-metadata",
+		Database: "ras",
 	}
 
 	mongoHandler = mongo.NewMongoHandler(appc, dbc)

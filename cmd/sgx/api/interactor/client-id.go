@@ -6,6 +6,10 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+type ClientType struct {
+	ClientID string `bson:"client_id"`
+}
+
 type ClientIDInteractor struct {
 	*mongo.MongoHandler
 	Collection string
@@ -54,7 +58,8 @@ func (i *ClientIDInteractor) FindOneByCliendID(clientID uuid.UUID) (*uuid.UUID, 
 // }
 
 func (i *ClientIDInteractor) InsertClientID(clientID uuid.UUID) error {
-	return i.MongoHandler.Insert(i.Collection, clientID)
+	c := ClientType{clientID.String()}
+	return i.MongoHandler.Insert(i.Collection, c)
 }
 
 // func (i *ClientIDInteractor) UpsertClientID(clientID uuid.UUID) error {
@@ -64,6 +69,6 @@ func (i *ClientIDInteractor) InsertClientID(clientID uuid.UUID) error {
 // }
 
 func (i *ClientIDInteractor) DeleteClientID(clientID string) error {
-	query := bson.M{"clientID_id": clientID}
+	query := bson.M{"client_id": clientID}
 	return i.MongoHandler.Delete(i.Collection, query)
 }

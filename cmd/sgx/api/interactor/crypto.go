@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	publicKeyPath  = "../key/RAS-rsa-key-pub.pem"
-	privateKeyPath = "../key/RAS-rsa-key.pem"
+	publicKeyPath  = "key/RAS-rsa-key-pub.pem"
+	privateKeyPath = "key/RAS-rsa-key.pem"
 )
 
 type CryptoInteractor struct {
@@ -62,22 +62,22 @@ func readRsaPublicKey() (*rsa.PublicKey, error) {
 	if block == nil {
 		return nil, errors.New("invalid public key data")
 	}
-	if block.Type != "PUBLIC KEY" {
+	if block.Type != "RSA PUBLIC KEY" {
 		return nil, fmt.Errorf("invalid public key type : %s", block.Type)
 	}
 
 	// type これで合ってる？
-	keyInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
+	keyInterface, err := x509.ParsePKCS1PublicKey(block.Bytes)
 	if err != nil {
 		return nil, err
 	}
 
-	key, ok := keyInterface.(*rsa.PublicKey)
-	if !ok {
-		return nil, errors.New("not RSA public key")
-	}
+	// key, ok := keyInterface.(*rsa.PublicKey)
+	// if !ok {
+	// 	return nil, errors.New("not RSA public key")
+	// }
 
-	return key, nil
+	return keyInterface, nil
 }
 
 func NewCryptoInteractor() *CryptoInteractor {

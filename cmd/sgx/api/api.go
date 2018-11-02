@@ -152,18 +152,16 @@ func PostImage(c echo.Context) error {
 }
 
 func GetClientID(c echo.Context) error {
-	var err error
 	/* clientIDを発行する(特に同じクライアントだから同じにする必要もないと思う) -> MRSIGNER で良くない？？ */
 	clientID := uuid.New()
+
+	err := clientIDInteractor.InsertClientID(clientID)
 	if err != nil {
-		fmt.Println("uuid.New()")
-		return c.String(http.StatusBadRequest, err.Error())
+		fmt.Println("failed InsertClientID: %s\n", err.Error())
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	// DBにclient_idを登録
-	clientIDstr := clientID.String()
-
-	return c.String(http.StatusOK, clientIDstr)
+	return c.String(http.StatusOK, clientID.String())
 }
 
 func GetCryptoKey(c echo.Context) error {

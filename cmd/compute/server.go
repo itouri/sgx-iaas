@@ -13,7 +13,7 @@ func main() {
 
 	//e.GET("/vm/start/:image_id", GetStartVM)
 	//e.GET("/vm/stop/:image_id", GetStopVM)
-	e.POST("/vm/create/:image_id", PostVMCreate)
+	e.GET("/vm/create/:image_id", PostVMCreate)
 
 	e.Start(":1323")
 }
