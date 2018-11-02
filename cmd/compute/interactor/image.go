@@ -27,6 +27,29 @@ func (ii *ImageInteractor) GetAllFileStatus() {
 	// TODO
 }
 
+func (ii *ImageInteractor) GetImageMetedata(imageID string) ([]byte, error) {
+	file, err := os.Open(ii.Path + imageID)
+	if err != nil {
+		// Openエラー処理
+		return nil, err
+	}
+	defer file.Close()
+
+	buf := make([]byte, 1024)
+	size := 0
+	for {
+		size, err := file.Read(buf)
+		if size == 0 {
+			break
+		}
+		if err != nil {
+			// Readエラー処理
+			return nil, err
+		}
+	}
+	return buf[:size], nil
+}
+
 func (ii *ImageInteractor) GetFileFromGlance(url string, imageID string) error {
 	imagePath := ii.Path + imageID
 	if !isExist(imagePath) {
