@@ -82,8 +82,9 @@ func PostImage(c echo.Context) error {
 	//enclaveSoFilePath :=
 	// graphene のやつで計測できないかな... 難しそう
 	//mrenclave := "abcdabcdabcdabcdabcdabcdabcdabcd"
-	appPath := tmpStorePath + "/main"
-	out, err := exec.Command(appPath, "mr").Output()
+	appPath := tmpStorePath + "/get_mrenclave_app"
+	soPath := tmpStorePath + "/emain.so"
+	out, err := exec.Command(appPath, soPath).Output()
 
 	mrenclave := out
 	if len(mrenclave) != mrenclaveSize {

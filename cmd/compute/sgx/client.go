@@ -1,4 +1,4 @@
-package interactor
+package main
 
 import (
 	"crypto/sha256"
@@ -12,10 +12,6 @@ import (
 	nonce "github.com/LarryBattle/nonce-golang"
 	"github.com/google/uuid"
 )
-
-type VmInteractor struct {
-	ImagePath string
-}
 
 type image_id_t [16]byte
 
@@ -143,9 +139,13 @@ func VMCreate(imageUUID uuid.UUID) error {
 	}
 	return nil
 }
-func (vc *VmInteractor) VMDelete() error {
-	// TODO
-	// sgx_destroy_enclaveを呼ぶ
 
-	return nil
+func main() {
+	imageID := uuid.New()
+	fmt.Println(imageID.MarshalBinary())
+
+	err := VMCreate(imageID)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
